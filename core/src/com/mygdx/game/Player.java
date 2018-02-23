@@ -1,35 +1,37 @@
 package com.mygdx.game;
 
 public class Player {
-	double xCoordinate;
-	double yCoordinate;
+	float xCoordinate;
+	float yCoordinate;
 	double health;
+	int speed = 2;
 	
-	public Player(double initialX, double initialY, double initialHealth)
+	
+	public Player(float initialX, float initialY, double initialHealth)
 	{
 		xCoordinate = initialX;
 		yCoordinate = initialY;
 		health = initialHealth;
 	}
 	
-	public double getxCoordinate()
+	public float getxCoordinate()
 	{
 		
 		return xCoordinate;
 	}
 	
-	public double getyCoordinate()
+	public float getyCoordinate()
 	{
 		
 		return yCoordinate;
 	}
 	
-	public void setXCoordinate(double newX)
+	public void setXCoordinate(float newX)
 	{
 		xCoordinate = newX;
 	}
 	
-	public void setYCoordinate(double newY)
+	public void setYCoordinate(float newY)
 	{
 		yCoordinate = newY;
 	}
