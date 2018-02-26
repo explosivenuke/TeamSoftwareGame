@@ -15,6 +15,7 @@ import javax.swing.Timer;
 public class MyGdxGame extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img;
+	Texture img1;
 	Player mainP = new Player(50,50,100);
 	int direction = 0;
 	ActionListener taskPerformer = new ActionListener() {
@@ -29,7 +30,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		emimymove.setInitialDelay(10);
 		emimymove.start();
 		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+		img = new Texture("greensquare.png");
+		img1 = new Texture("yellowsquare.jpg");
 	}
 
 	@Override
@@ -59,6 +61,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
 		batch.draw(img, mainP.getxCoordinate(), mainP.getyCoordinate());
+		batch.draw(img1, 100, 100);
 		batch.end();
 	}
 	
