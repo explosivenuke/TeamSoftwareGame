@@ -12,10 +12,15 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 
+import com.badlogic.gdx.math.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.Timer;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+
 
 public class MyGdxGame extends ApplicationAdapter {
 	SpriteBatch batch;
@@ -35,7 +40,9 @@ public class MyGdxGame extends ApplicationAdapter {
 	int bulletheight = 20;
 	private OrthographicCamera cam;
 	float BulletGap = 30;
-	  
+	Rectangle rectanglePlayer;
+	Rectangle rectangleCeiling;
+	Rectangle rectangleFloor;
 	
 	Player mainP = new Player(50,50,100);
 	Bullet bull = new Bullet();
@@ -59,38 +66,77 @@ public class MyGdxGame extends ApplicationAdapter {
 		img4 = new Texture("2.png");
 		img5 = new Texture("3.png");
 		bullet = new Texture("bullet.png");
+		rectanglePlayer = new Rectangle(
+				mainP.getxCoordinate(),mainP.getyCoordinate(),img2.getWidth(),img2.getHeight());
 		
 	}
 
 	@Override
 	public void render () {
+		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		Tile ceiling = new Tile(0,Gdx.graphics.getHeight()-((float) (Gdx.graphics.getHeight()*0.10)),Gdx.graphics.getWidth(),(float) (Gdx.graphics.getHeight()*0.10));
+		ceiling.renderTile();
+		Tile floor = new Tile(0,0,Gdx.graphics.getWidth(),(float) (Gdx.graphics.getHeight()*0.10));
+		floor.renderTile();
+		rectangleCeiling = new Rectangle(ceiling.getXCoordinate(),ceiling.getYCoordinate(),ceiling.getWidth(),ceiling.getHeight());
+		rectangleFloor = new Rectangle(floor.getXCoordinate(),floor.getYCoordinate(),floor.getWidth(),floor.getHeight());
+		
+		boolean isOverlappingCeiling = rectanglePlayer.overlaps(rectangleCeiling);
+		boolean isOverlappingFloor = rectanglePlayer.overlaps(rectangleFloor);
 		float rise = (Math.abs(bull.gety() - mainP.getyCoordinate()));
 		float run = (Math.abs(bull.getx() - mainP.getxCoordinate()));
 	float slope = (Math.abs(bull.gety() - mainP.getyCoordinate())) / (Math.abs(bull.getx() - mainP.getxCoordinate()));
 		if(Gdx.input.isKeyPressed(Keys.UP))
 		{
+			if(!Gdx.input.isKeyJustPressed(Keys.SPACE))
+			{
+				if(!isOverlappingCeiling)
+				{
+					
+				
+			
 			
 			up = true;
 			last = 0;
 			mainP.setYCoordinate(mainP.getyCoordinate() + mainP.speed);
+			rectanglePlayer.setPosition(mainP.getxCoordinate(), mainP.getyCoordinate() + mainP.speed);
+				}
+			}
 		}
 		if(Gdx.input.isKeyPressed(Keys.DOWN))
 		{
+			if(!Gdx.input.isKeyJustPressed(Keys.SPACE))
+			{
+				if(!isOverlappingFloor)
+				{
 			last = 2;
 			down = true;
 			mainP.setYCoordinate(mainP.getyCoordinate() - mainP.speed);
+			rectanglePlayer.setPosition(mainP.getxCoordinate(), mainP.getyCoordinate() - mainP.speed);
+				}
+			}
 		}
 		if(Gdx.input.isKeyPressed(Keys.RIGHT))
 		{
+			if(!Gdx.input.isKeyJustPressed(Keys.SPACE))
+			{
+				
 			last = 1;
 			right = true;
 			mainP.setXCoordinate(mainP.getxCoordinate() + mainP.speed);
+			rectanglePlayer.setPosition(mainP.getxCoordinate() + mainP.speed, mainP.getyCoordinate());
+			}
 		}
 		if(Gdx.input.isKeyPressed(Keys.LEFT))
 		{
+			if(!Gdx.input.isKeyJustPressed(Keys.SPACE))
+			{
 			last = 3;
 			left = true;
 			mainP.setXCoordinate(mainP.getxCoordinate() - mainP.speed);
+			rectanglePlayer.setPosition(mainP.getxCoordinate() - mainP.speed, mainP.getyCoordinate());
+			}
 		}
 //		if(direction == 1) mainP.setYCoordinate(mainP.getyCoordinate() + 1);
 //		if(direction == 2) mainP.setYCoordinate(mainP.getyCoordinate() - 1);
@@ -172,8 +218,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	*/
 		}
 		
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
 		batch.begin();
 		if(up == true)
 		{
@@ -229,22 +274,22 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		if(bull.getdirection() == 0)
 		{
-			bull.sety(bull.gety() + 1);
+			bull.sety(bull.gety() + bull.getspeed());
 		}
 		
 		if(bull.getdirection() == 1)
 		{
-			bull.setx(bull.getx() + 1);
+			bull.setx(bull.getx() + bull.getspeed());
 		}
 		
 		if(bull.getdirection() == 2)
 		{
-			bull.sety(bull.gety() - 1);
+			bull.sety(bull.gety() - bull.getspeed());
 		}
 		
 		if(bull.getdirection() == 3)
 		{
-			bull.setx(bull.getx() - 1);
+			bull.setx(bull.getx() - bull.getspeed());
 		}
 			
 		/*
