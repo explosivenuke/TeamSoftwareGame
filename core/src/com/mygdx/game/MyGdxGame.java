@@ -4,6 +4,9 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -15,6 +18,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.Timer;
 import com.badlogic.gdx.graphics.Color;
@@ -43,7 +47,9 @@ public class MyGdxGame extends ApplicationAdapter {
 	Rectangle rectanglePlayer;
 	Rectangle rectangleCeiling;
 	Rectangle rectangleFloor;
-	
+	Rectangle rectangleBullet;
+	Sound shot;
+	Music music;
 	Player mainP = new Player(50,50,100);
 	Bullet bull = new Bullet();
 	int direction = 0;
@@ -56,6 +62,9 @@ public class MyGdxGame extends ApplicationAdapter {
 	
 //	@Override
 	public void create () {
+		shot = Gdx.audio.newSound(Gdx.files.internal("pew.wav"));
+		music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+		 music.isLooping();
 		emimymove.setInitialDelay(10);
 		emimymove.start();
 		batch = new SpriteBatch();
@@ -65,10 +74,12 @@ public class MyGdxGame extends ApplicationAdapter {
 		img3 = new Texture("1.png");
 		img4 = new Texture("2.png");
 		img5 = new Texture("3.png");
+		
 		bullet = new Texture("bullet.png");
 		rectanglePlayer = new Rectangle(
 				mainP.getxCoordinate(),mainP.getyCoordinate(),img2.getWidth(),img2.getHeight());
-		
+		rectangleBullet = new Rectangle(bull.getx(),bull.gety(), bullet.getWidth(), bullet.getHeight());
+		music.play();
 	}
 
 	@Override
@@ -84,6 +95,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		boolean isOverlappingCeiling = rectanglePlayer.overlaps(rectangleCeiling);
 		boolean isOverlappingFloor = rectanglePlayer.overlaps(rectangleFloor);
+		boolean isBulletOverlappingCeiling = rectangleBullet.overlaps(rectangleCeiling);
+		boolean isBulletOverlappingFloor = rectangleBullet.overlaps(rectangleFloor);
 		float rise = (Math.abs(bull.gety() - mainP.getyCoordinate()));
 		float run = (Math.abs(bull.getx() - mainP.getxCoordinate()));
 	float slope = (Math.abs(bull.gety() - mainP.getyCoordinate())) / (Math.abs(bull.getx() - mainP.getxCoordinate()));
@@ -145,6 +158,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		if(Gdx.input.isKeyJustPressed(Keys.SPACE) && last == 0)
 		{
+			shot.play(1.0f);
 			bull.setx(mainP.getxCoordinate());
 			bull.sety(mainP.getyCoordinate() + BulletGap);
 			bull.setdirection(-1);
@@ -152,6 +166,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		if(Gdx.input.isKeyJustPressed(Keys.SPACE) && last == 1)
 		{
+			shot.play(1.0f);
 			bull.setx(mainP.getxCoordinate() + BulletGap);
 			bull.sety(mainP.getyCoordinate());
 			bull.setdirection(-1);
@@ -159,6 +174,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		if(Gdx.input.isKeyJustPressed(Keys.SPACE) && last == 2)
 		{
+			shot.play(1.0f);
 			bull.setx(mainP.getxCoordinate());
 			bull.sety(mainP.getyCoordinate() - BulletGap);
 			bull.setdirection(-1);
@@ -166,6 +182,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		if(Gdx.input.isKeyJustPressed(Keys.SPACE) && last == 3)
 		{
+			shot.play(1.0f);
 			bull.setx(mainP.getxCoordinate() - BulletGap);
 			bull.sety(mainP.getyCoordinate());
 			bull.setdirection(-1);
@@ -274,20 +291,26 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		if(bull.getdirection() == 0)
 		{
+			
+			
 			bull.sety(bull.gety() + bull.getspeed());
+			
+			
 		}
 		
-		if(bull.getdirection() == 1)
+		else if(bull.getdirection() == 1)
 		{
 			bull.setx(bull.getx() + bull.getspeed());
 		}
 		
-		if(bull.getdirection() == 2)
+		else if(bull.getdirection() == 2)
 		{
+			
 			bull.sety(bull.gety() - bull.getspeed());
+			
 		}
 		
-		if(bull.getdirection() == 3)
+		else if(bull.getdirection() == 3)
 		{
 			bull.setx(bull.getx() - bull.getspeed());
 		}
@@ -297,7 +320,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		bull.sety(bull.gety() + slope);
 		*/
 		
-		batch.draw(bullet, bull.getx(),  bull.gety());
+		batch.draw(bullet, bull.getx(),  bull.gety(), 10, 10);
+		
 		batch.end();
 		left = false;
 		right = false;
@@ -315,5 +339,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		img3.dispose();
 		img4.dispose();
 		img5.dispose();
+		bullet.dispose();
+		shot.dispose();
+		music.dispose();
 	}
 }
