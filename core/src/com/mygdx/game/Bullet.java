@@ -2,11 +2,13 @@ package com.mygdx.game;
 
 public class Bullet extends Entity{
 
-	float xcoordinate = -1;
-	float ycoordinate = -1;
+	//variables for the bullets coordinates and damage direction and speed
+	float xcoordinate = -100;
+	float ycoordinate = -100;
 	int damage = 1;
 	int direction = -1;
 	int speed = 5;
+	
 	
 	public int getspeed()
 	{
@@ -30,12 +32,12 @@ public class Bullet extends Entity{
 	}
 	
 	public float getx() {
-		// TODO Auto-generated method stub
+		
 		return xcoordinate;
 	}
 	
 	public float gety() {
-		// TODO Auto-generated method stub
+		
 		return ycoordinate;
 	}
 	

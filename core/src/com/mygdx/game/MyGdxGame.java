@@ -43,7 +43,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	int screensize = 1000;
 	int bulletheight = 20;
 	private OrthographicCamera cam;
-	float BulletGap = 30;
+	float BulletGap = 0;
 	Rectangle rectanglePlayer;
 	Rectangle rectangleCeiling;
 	Rectangle rectangleFloor;
@@ -53,6 +53,10 @@ public class MyGdxGame extends ApplicationAdapter {
 	Player mainP = new Player(50,50,100);
 	Bullet bull = new Bullet();
 	int direction = 0;
+	boolean bulletIsLoaded = false;
+	
+	
+	//used for basic enemy ai in future
 	ActionListener taskPerformer = new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
 			direction = (int) Math.floor(Math.random() * 4) + 1;
@@ -62,11 +66,14 @@ public class MyGdxGame extends ApplicationAdapter {
 	
 //	@Override
 	public void create () {
+		//creating shot sound and background music
 		shot = Gdx.audio.newSound(Gdx.files.internal("pew.wav"));
 		music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
 		 music.isLooping();
+		 //more stuff for future enemy ai
 		emimymove.setInitialDelay(10);
 		emimymove.start();
+		//creating the sprites and their textures
 		batch = new SpriteBatch();
 		img = new Texture("greensquare.png");
 		img1 = new Texture("yellowsquare.jpg");
@@ -76,16 +83,22 @@ public class MyGdxGame extends ApplicationAdapter {
 		img5 = new Texture("3.png");
 		
 		bullet = new Texture("bullet.png");
+		//creating boundary for collision on player and bullet, 
+		//the bullet not being implemented fully yet
 		rectanglePlayer = new Rectangle(
 				mainP.getxCoordinate(),mainP.getyCoordinate(),img2.getWidth(),img2.getHeight());
 		rectangleBullet = new Rectangle(bull.getx(),bull.gety(), bullet.getWidth(), bullet.getHeight());
 		music.play();
 	}
-
+	//variables for controlling bullet speed
+	float bullSpeedX;
+	float bullSpeedY;
 	@Override
 	public void render () {
+		//clearing color and setting background color
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		//creating the ceiling boundary and floor boundary 
 		Tile ceiling = new Tile(0,Gdx.graphics.getHeight()-((float) (Gdx.graphics.getHeight()*0.10)),Gdx.graphics.getWidth(),(float) (Gdx.graphics.getHeight()*0.10));
 		ceiling.renderTile();
 		Tile floor = new Tile(0,0,Gdx.graphics.getWidth(),(float) (Gdx.graphics.getHeight()*0.10));
@@ -93,13 +106,20 @@ public class MyGdxGame extends ApplicationAdapter {
 		rectangleCeiling = new Rectangle(ceiling.getXCoordinate(),ceiling.getYCoordinate(),ceiling.getWidth(),ceiling.getHeight());
 		rectangleFloor = new Rectangle(floor.getXCoordinate(),floor.getYCoordinate(),floor.getWidth(),floor.getHeight());
 		
+		//booleans that are checking collision
 		boolean isOverlappingCeiling = rectanglePlayer.overlaps(rectangleCeiling);
 		boolean isOverlappingFloor = rectanglePlayer.overlaps(rectangleFloor);
 		boolean isBulletOverlappingCeiling = rectangleBullet.overlaps(rectangleCeiling);
 		boolean isBulletOverlappingFloor = rectangleBullet.overlaps(rectangleFloor);
+		
+		//calcuates rise and run between player and bullet click position and slope
 		float rise = (Math.abs(bull.gety() - mainP.getyCoordinate()));
 		float run = (Math.abs(bull.getx() - mainP.getxCoordinate()));
+		
 	float slope = (Math.abs(bull.gety() - mainP.getyCoordinate())) / (Math.abs(bull.getx() - mainP.getxCoordinate()));
+	//controls players action based on input and checks to see if space is pressed while
+	//they are moving so that the bullet can travel while player is moving
+	//also does the check for collision and responds accordingly
 		if(Gdx.input.isKeyPressed(Keys.UP))
 		{
 			if(!Gdx.input.isKeyJustPressed(Keys.SPACE))
@@ -156,12 +176,16 @@ public class MyGdxGame extends ApplicationAdapter {
 //		if(direction == 3) mainP.setXCoordinate(mainP.getxCoordinate() + 1);
 //		if(direction == 4) mainP.setXCoordinate(mainP.getxCoordinate() - 1);
 		
+		
+		//allows player to shoot using space bar is obsolete and will be replaced 
+		//by mouse oonce fully functioning
 		if(Gdx.input.isKeyJustPressed(Keys.SPACE) && last == 0)
 		{
 			shot.play(1.0f);
 			bull.setx(mainP.getxCoordinate());
 			bull.sety(mainP.getyCoordinate() + BulletGap);
 			bull.setdirection(-1);
+			bulletIsLoaded = true;
 		}
 		
 		if(Gdx.input.isKeyJustPressed(Keys.SPACE) && last == 1)
@@ -170,6 +194,7 @@ public class MyGdxGame extends ApplicationAdapter {
 			bull.setx(mainP.getxCoordinate() + BulletGap);
 			bull.sety(mainP.getyCoordinate());
 			bull.setdirection(-1);
+			
 		}
 		
 		if(Gdx.input.isKeyJustPressed(Keys.SPACE) && last == 2)
@@ -189,13 +214,27 @@ public class MyGdxGame extends ApplicationAdapter {
 		}
 		
 		
-		
-		
+		//takes mouse click position and fires bullet at correct anle and speed 
+		//accordingly
 		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT))
 		{
 		
-		bull.setx(Gdx.input.getX() - 10);
-		bull.sety( Gdx.graphics.getHeight() - 1 -  Gdx.input.getY());
+		float targetX = Gdx.input.getX() - 10;
+		float targetY  = Gdx.graphics.getHeight() - 1 -  Gdx.input.getY();
+		float bullSlope = (float) Math.sqrt(Math.pow(targetX - mainP.xCoordinate, 2) + Math.pow(targetY - mainP.yCoordinate, 2));
+		bullSpeedX = targetX/bullSlope  * bull.speed;
+		bullSpeedY = targetY/bullSlope * bull.speed;
+		shot.play(1.0f);
+		bull.xcoordinate = mainP.getxCoordinate();
+		if(bull.xcoordinate > targetX) {
+			bullSpeedX = -bullSpeedX;
+		}
+		bull.ycoordinate = mainP.getyCoordinate();
+		if(bull.ycoordinate > targetY) {
+			bullSpeedY = -bullSpeedY;
+		}
+		
+		//everything here is obsolete was testing in attempt to get mouse working
 		/*
 		if(mainP.getxCoordinate() > bull.getx())
 		{
@@ -237,6 +276,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		
 		batch.begin();
+		//determines what image to load for 
+		//character based on what direction they were facing
 		if(up == true)
 		{
 		batch.draw(img2, mainP.getxCoordinate(), mainP.getyCoordinate());
@@ -289,7 +330,9 @@ public class MyGdxGame extends ApplicationAdapter {
 			}
 		}
 		
-		if(bull.getdirection() == 0)
+		//obsolete code from click to shoot attempts
+		
+		/*if(bull.getdirection() == 0)
 		{
 			
 			
@@ -320,6 +363,10 @@ public class MyGdxGame extends ApplicationAdapter {
 		bull.sety(bull.gety() + slope);
 		*/
 		
+		//where we actually draw the sprites every tick of the game
+		
+		bull.setx(bull.xcoordinate + bullSpeedX);
+		bull.sety(bull.ycoordinate + bullSpeedY);
 		batch.draw(bullet, bull.getx(),  bull.gety(), 10, 10);
 		
 		batch.end();
@@ -330,6 +377,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 	}
 	
+	//disposing of images after use
 	@Override
 	public void dispose () {
 		batch.dispose();

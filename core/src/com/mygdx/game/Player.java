@@ -1,6 +1,10 @@
 package com.mygdx.game;
 
 public class Player {
+	
+	//variables for player position health and speed and their corresponding
+	//getter and setters
+	
 	float xCoordinate;
 	float yCoordinate;
 	double health;
