@@ -42,7 +42,6 @@ public class MyGdxGame extends ApplicationAdapter {
 	int last = 0;
 	int screensize = 1000;
 	int bulletheight = 20;
-	private OrthographicCamera cam;
 	float BulletGap = 0;
 	Rectangle rectanglePlayer;
 	Rectangle rectangleCeiling;
@@ -221,18 +220,21 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		float targetX = Gdx.input.getX() - 10;
 		float targetY  = Gdx.graphics.getHeight() - 1 -  Gdx.input.getY();
-		float bullSlope = (float) Math.sqrt(Math.pow(targetX - mainP.xCoordinate, 2) + Math.pow(targetY - mainP.yCoordinate, 2));
-		bullSpeedX = targetX/bullSlope  * bull.speed;
-		bullSpeedY = targetY/bullSlope * bull.speed;
+		float tempy = Gdx.graphics.getHeight() - 1 - mainP.getyCoordinate();
+		float bullSlope = (float) Math.sqrt(Math.pow(targetX - mainP.getxCoordinate(), 2) + Math.pow(targetY - mainP.getyCoordinate(), 2));
+		bullSpeedX = ((targetX - mainP.getxCoordinate())/bullSlope)  * bull.speed;
+		bullSpeedY = ((targetY - mainP.getyCoordinate())/bullSlope) * bull.speed;
 		shot.play(1.0f);
+//		bull.xcoordinate = targetX;
+//		bull.ycoordinate = tempy;
 		bull.xcoordinate = mainP.getxCoordinate();
-		if(bull.xcoordinate > targetX) {
-			bullSpeedX = -bullSpeedX;
-		}
+//		if(bull.xcoordinate > targetX) {
+//			bullSpeedX = -bullSpeedX;
+//		}
 		bull.ycoordinate = mainP.getyCoordinate();
-		if(bull.ycoordinate > targetY) {
-			bullSpeedY = -bullSpeedY;
-		}
+//		if(bull.ycoordinate > targetY) {
+//			bullSpeedY = -bullSpeedY;
+//		}
 		
 		//everything here is obsolete was testing in attempt to get mouse working
 		/*
