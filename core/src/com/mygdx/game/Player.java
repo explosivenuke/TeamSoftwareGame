@@ -1,43 +1,41 @@
 package com.mygdx.game;
 
-public class Player {
+public class Player extends Entity{
 	
 	//variables for player position health and speed and their corresponding
 	//getter and setters
 	
-	float xCoordinate;
-	float yCoordinate;
+	
 	double health;
 	int speed = 2;
 	
 	
-	public Player(float initialX, float initialY, double initialHealth)
+	public Player(float initialX, float initialY, float sizeX, float sizeY, double speed, double initialHealth, boolean inv)
 	{
-		xCoordinate = initialX;
-		yCoordinate = initialY;
+		super(initialX, initialY, sizeX, sizeY, speed, initialHealth, inv);
 		health = initialHealth;
 	}
 	
 	public float getxCoordinate()
 	{
 		
-		return xCoordinate;
+		return getPosX();
 	}
 	
 	public float getyCoordinate()
 	{
 		
-		return yCoordinate;
+		return getPosY();
 	}
 	
 	public void setXCoordinate(float newX)
 	{
-		xCoordinate = newX;
+		move(newX,getPosY());
 	}
 	
 	public void setYCoordinate(float newY)
 	{
-		yCoordinate = newY;
+		move(getPosX(),newY);
 	}
 	
 	public double getHealth()
