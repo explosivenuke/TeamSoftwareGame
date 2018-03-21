@@ -17,6 +17,7 @@ import com.mygdx.game.Tile;
 
 public class MainGameScreen implements Screen{
 	MyGdxGame game;
+	MainGameScreen main;
 	Texture img;
 	Texture img1;
 	Texture img2;
@@ -45,12 +46,38 @@ public class MainGameScreen implements Screen{
 	boolean bulletIsLoaded = false;
 	int width = 25;
 	int height = 25;
+	boolean paused = false;
 	boolean isOverlappingCeiling;
 	boolean isOverlappingFloor;
 	boolean isBulletOverlappingCeiling;
 	boolean isBulletOverlappingFloor;
 	Tile ceiling;
 	Tile floor;
+	static int buttonGap = 10;
+	
+	
+	private static int backdropHeight = MyGdxGame.height - 120;
+	private static int backdropWidth = 500;
+	private static int backdropX = MyGdxGame.width/2 - backdropWidth/2;
+	private static int backdropY = MyGdxGame.height/2 - backdropHeight/2;
+	
+	private static int continuebuttonHeight = 50;
+	private static int continuebuttonWidth = 300;
+	private static int continuebuttonX = MyGdxGame.width/2 - continuebuttonWidth/2;
+	private static int continuebuttonY = MyGdxGame.height/2 - continuebuttonHeight/2;
+	private static int quitbuttonHeight = 50;
+	private static int quitbuttonWidth =  300;
+	private static int quitbuttonX = MyGdxGame.width/2 - quitbuttonWidth/2;
+	private static int quitbuttonY = MyGdxGame.height/2 - quitbuttonHeight/2 - (buttonGap + continuebuttonHeight);
+	int x = MyGdxGame.width/2 - continuebuttonHeight;
+
+
+	Texture continueActive;
+	Texture continueInactive;
+	Texture quitActive;
+	Texture quitInactive;
+	Texture backdrop;
+	
 	//variables for controlling bullet speed
 		float bullSpeedX;
 		float bullSpeedY;
@@ -59,29 +86,37 @@ public class MainGameScreen implements Screen{
 		public MainGameScreen (MyGdxGame game)
 		{
 			this.game = game;
+			main = game.main;
+			continueActive = new Texture("continue_green.png");
+			continueInactive = new Texture("continue_red.png");
+			quitActive = new Texture("quit_green.png");
+			quitInactive = new Texture("quit_red.png");
+			img = new Texture("greensquare.png");
+			img1 = new Texture("yellowsquare.jpg");
+			img2 = new Texture("0.png");
+			img3 = new Texture("1.png");
+			img4 = new Texture("2.png");
+			img5 = new Texture("3.png");
+			
+			bullet = new Texture("bullet.png");
+		 	backdrop = new Texture("backdrop.png");
+		 	shot = Gdx.audio.newSound(Gdx.files.internal("pew.wav"));
+			music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+			
 		}
 	
 	@Override
 	public void show() {
 		//creating shot sound and background music
-		shot = Gdx.audio.newSound(Gdx.files.internal("pew.wav"));
-		music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
-		 music.isLooping();
+		
 		//Gdx.graphics.setWindowedMode(1000, 10000);
 	
 		//creating the sprites and their textures
 		
-		img = new Texture("greensquare.png");
-		img1 = new Texture("yellowsquare.jpg");
-		img2 = new Texture("0.png");
-		img3 = new Texture("1.png");
-		img4 = new Texture("2.png");
-		img5 = new Texture("3.png");
-		
-		bullet = new Texture("bullet.png");
+	
 		//creating boundary for collision on player and bullet, 
 		//the bullet not being implemented fully yet
-		
+		 music.isLooping();
 		music.play();
 		//booleans that are checking collision
 		
@@ -94,6 +129,9 @@ public class MainGameScreen implements Screen{
 
 	@Override
 	public void render(float delta) {
+		//clearing color and setting background color
+		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		//creating the ceiling boundary and floor boundary 
 				rectanglePlayer = new Rectangle(
 						mainP.getxCoordinate(),mainP.getyCoordinate(),img2.getWidth(),img2.getHeight());
@@ -127,6 +165,30 @@ public class MainGameScreen implements Screen{
 			//controls players action based on input and checks to see if space is pressed while
 			//they are moving so that the bullet can travel while player is moving
 			//also does the check for collision and responds accordingly
+			
+			if(Gdx.input.isKeyJustPressed(Keys.ESCAPE))
+			{
+				this.dispose();
+				
+				if(paused)
+				{
+					resume();
+				}
+				else
+				{
+					pause();
+					
+					
+					
+				}
+				
+//				game.setScreen(new PauseMenuScreen(game,main));
+				
+			}
+			
+			if(!paused)
+			{
+			
 				if(Gdx.input.isKeyPressed(Keys.UP))
 				{
 					if(!Gdx.input.isKeyJustPressed(Keys.SPACE))
@@ -285,10 +347,8 @@ public class MainGameScreen implements Screen{
 			*/
 				}
 				
-				//clearing color and setting background color
-				Gdx.gl.glClearColor(1, 0, 0, 1);
-				Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-				game.batch.begin();
+			
+				game.batch.begin(); 
 				//determines what image to load for 
 				//character based on what direction they were facing
 				if(up == true)
@@ -389,6 +449,53 @@ public class MainGameScreen implements Screen{
 				right = false;
 				up = false;
 				down = false;
+		}
+			
+			if(paused)
+			{
+			
+			game.batch.begin();
+			music.stop();
+			
+			game.batch.draw(backdrop, MyGdxGame.width/2 - backdropWidth/2,MyGdxGame.height/2 - backdropHeight/2,backdropWidth,backdropHeight);
+			
+			if(Gdx.input.getX() < x + continuebuttonWidth && Gdx.input.getX() > x && MyGdxGame.height - Gdx.input.getY() < continuebuttonY + continuebuttonHeight && MyGdxGame.height - Gdx.input.getY() > continuebuttonY)
+			{
+				game.batch.draw(continueActive, MyGdxGame.width/2 - continuebuttonWidth/2, MyGdxGame.height/2 - continuebuttonHeight/2,continuebuttonWidth,continuebuttonHeight);
+				
+				if(Gdx.input.isTouched())
+				{
+					this.dispose();
+					resume();
+				}
+				
+			}
+			else
+			{
+				game.batch.draw(continueInactive, MyGdxGame.width/2 - continuebuttonWidth/2, MyGdxGame.height/2 - continuebuttonHeight/2,continuebuttonWidth,continuebuttonHeight);
+
+			}
+			
+			if(Gdx.input.getX() < x + quitbuttonWidth && Gdx.input.getX() > x && MyGdxGame.height - Gdx.input.getY() < quitbuttonY + quitbuttonHeight && MyGdxGame.height - Gdx.input.getY() > quitbuttonY)
+			{
+				
+			game.batch.draw(quitActive, MyGdxGame.width/2 - quitbuttonWidth/2,  MyGdxGame.height/2 - quitbuttonHeight/2 - (buttonGap + continuebuttonHeight),quitbuttonWidth, quitbuttonHeight);
+			
+			if(Gdx.input.isTouched())
+			{
+				Gdx.app.exit();
+			}
+			
+			}
+			else
+			{
+				
+			game.batch.draw(quitInactive, MyGdxGame.width/2 - quitbuttonWidth/2,  MyGdxGame.height/2 - quitbuttonHeight/2 - (buttonGap + continuebuttonHeight),quitbuttonWidth, quitbuttonHeight);
+		
+			}
+			
+			game.batch.end();
+			}
 				
 	}
 
@@ -400,14 +507,14 @@ public class MainGameScreen implements Screen{
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
+		paused = true;	
 		
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
-		
+		paused = false;		
+		music.play();
 	}
 
 	@Override

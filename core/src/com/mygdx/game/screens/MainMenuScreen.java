@@ -1,10 +1,10 @@
-package com.mygdx.game;
+package com.mygdx.game.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.mygdx.game.screens.MainGameScreen;
+import com.mygdx.game.MyGdxGame;
 
 public class MainMenuScreen implements Screen{
 
@@ -20,7 +20,7 @@ public class MainMenuScreen implements Screen{
 	private static int quitbuttonY = MyGdxGame.height/2 - quitbuttonHeight/2 - (buttonGap + startbuttonHeight);
 	int x = MyGdxGame.width/2 - startbuttonHeight;
 
-
+ 
 	Texture startActive;
 	Texture startInactive;
 	Texture quitActive;
@@ -57,7 +57,9 @@ public class MainMenuScreen implements Screen{
 			if(Gdx.input.isTouched())
 			{
 				this.dispose();
-				game.setScreen(new MainGameScreen(game));
+				MainGameScreen gamer = new MainGameScreen(game);
+				game.main = gamer;
+				game.setScreen(gamer);
 			}
 			
 		}

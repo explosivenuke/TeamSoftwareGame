@@ -16,6 +16,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.mygdx.game.screens.MainGameScreen;
+import com.mygdx.game.screens.MainMenuScreen;
 import com.badlogic.gdx.math.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,7 +31,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 public class MyGdxGame extends Game {
 	public static int width = 1366;
 	public static int height = 768;
-
+	public MainGameScreen main;
 	public SpriteBatch batch;
 
 	public void create () {
