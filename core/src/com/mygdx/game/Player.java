@@ -7,7 +7,7 @@ public class Player extends Entity{
 	
 	
 	double health;
-	int speed = 2;
+	public int speed = 2;
 	
 	
 	public Player(float initialX, float initialY, float sizeX, float sizeY, double speed, double initialHealth, boolean inv)

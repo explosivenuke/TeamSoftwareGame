@@ -9,12 +9,17 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		new LwjglApplication(new MyGdxGame(), config);
-		int size= 1000;
+		
+		config.foregroundFPS = 60;
+		config.width = MyGdxGame.width;
+		config.height = MyGdxGame.height;
+		
+		
 	
-		/*
-		config.width = size; 
-		config.height = size;
-		*/
+		
+//		config.width = size; 
+//		config.height = size;
+		
 		
 	}
 }
