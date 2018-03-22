@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.mygdx.game.MyGdxGame;
 
 public class PauseMenuScreen implements Screen{
@@ -20,7 +21,6 @@ public class PauseMenuScreen implements Screen{
 	private static int quitbuttonX = MyGdxGame.width/2 - quitbuttonWidth/2;
 	private static int quitbuttonY = MyGdxGame.height/2 - quitbuttonHeight/2 - (buttonGap + continuebuttonHeight);
 	int x = MyGdxGame.width/2 - continuebuttonHeight;
-
 
 	Texture continueActive;
 	Texture continueInactive;
@@ -50,7 +50,6 @@ public class PauseMenuScreen implements Screen{
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		game.batch.begin();
-		
 		if(Gdx.input.getX() < x + continuebuttonWidth && Gdx.input.getX() > x && MyGdxGame.height - Gdx.input.getY() < continuebuttonY + continuebuttonHeight && MyGdxGame.height - Gdx.input.getY() > continuebuttonY)
 		{
 			game.batch.draw(continueActive, MyGdxGame.width/2 - continuebuttonWidth/2, MyGdxGame.height/2 - continuebuttonHeight/2,continuebuttonWidth,continuebuttonHeight);

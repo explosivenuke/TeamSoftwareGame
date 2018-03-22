@@ -6,9 +6,13 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.game.Bullet;
 import com.mygdx.game.MyGdxGame;
@@ -31,13 +35,14 @@ public class MainGameScreen implements Screen{
 	boolean right;
 	int last = 0;
 	int screensize = 1000;
-	int bulletheight = 20;
+	int bulletheight = 2;
 	float bulletSpeed = 2;
 	float BulletGap = 0;
 	Rectangle rectanglePlayer;
 	Rectangle rectangleCeiling;
 	Rectangle rectangleFloor;
 	Rectangle rectangleBullet;
+	Tile healthBack;
 	Sound shot;
 	Music music;
 	Player mainP = new Player(50,50,100,100,2,100,false);
@@ -51,15 +56,24 @@ public class MainGameScreen implements Screen{
 	boolean isOverlappingFloor;
 	boolean isBulletOverlappingCeiling;
 	boolean isBulletOverlappingFloor;
+	ShapeRenderer shaperenderer;
 	Tile ceiling;
 	Tile floor;
 	static int buttonGap = 10;
-	
+	BitmapFont font;
 	
 	private static int backdropHeight = MyGdxGame.height - 120;
 	private static int backdropWidth = 500;
 	private static int backdropX = MyGdxGame.width/2 - backdropWidth/2;
 	private static int backdropY = MyGdxGame.height/2 - backdropHeight/2;
+	
+	
+	private static int healthbackHeight = 50;
+	private static int healthbackWidth = MyGdxGame.width/4;
+	private static int healthbackX = 0 + buttonGap;
+	private static int healthbackY = MyGdxGame.height+10 - 2*healthbackHeight;
+	
+	
 	
 	private static int continuebuttonHeight = 50;
 	private static int continuebuttonWidth = 300;
@@ -70,7 +84,7 @@ public class MainGameScreen implements Screen{
 	private static int quitbuttonX = MyGdxGame.width/2 - quitbuttonWidth/2;
 	private static int quitbuttonY = MyGdxGame.height/2 - quitbuttonHeight/2 - (buttonGap + continuebuttonHeight);
 	int x = MyGdxGame.width/2 - continuebuttonHeight;
-
+	int ratio;
 
 	Texture continueActive;
 	Texture continueInactive;
@@ -87,6 +101,11 @@ public class MainGameScreen implements Screen{
 		{
 			this.game = game;
 			main = game.main;
+			font = new BitmapFont();
+			font.getData().setScale(5);
+			font.setColor(Color.GREEN);
+			shaperenderer = new ShapeRenderer();
+			healthBack = new Tile(0,MyGdxGame.height,100,100);
 			continueActive = new Texture("continue_green.png");
 			continueInactive = new Texture("continue_red.png");
 			quitActive = new Texture("quit_green.png");
@@ -102,7 +121,6 @@ public class MainGameScreen implements Screen{
 		 	backdrop = new Texture("backdrop.png");
 		 	shot = Gdx.audio.newSound(Gdx.files.internal("pew.wav"));
 			music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
-			
 		}
 	
 	@Override
@@ -129,10 +147,16 @@ public class MainGameScreen implements Screen{
 
 	@Override
 	public void render(float delta) {
+		
+		ratio = (int) ((mainP.getHealth()/100)*(healthbackWidth-20));
+		
 		//clearing color and setting background color
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
 		//creating the ceiling boundary and floor boundary 
+		
+		
 				rectanglePlayer = new Rectangle(
 						mainP.getxCoordinate(),mainP.getyCoordinate(),img2.getWidth(),img2.getHeight());
 				rectangleBullet = new Rectangle(bull.getx(),bull.gety(), bullet.getWidth(), bullet.getHeight());
@@ -165,6 +189,9 @@ public class MainGameScreen implements Screen{
 			//controls players action based on input and checks to see if space is pressed while
 			//they are moving so that the bullet can travel while player is moving
 			//also does the check for collision and responds accordingly
+			
+		
+			
 			
 			if(Gdx.input.isKeyJustPressed(Keys.ESCAPE))
 			{
@@ -444,11 +471,34 @@ public class MainGameScreen implements Screen{
 				{
 				game.batch.draw(bullet, bull.getx(),  bull.gety(), width, height);
 				}
+				
+			
+				
+				
+			
+				
+				
+//				font.draw(game.batch,"health:",MyGdxGame.height/2,MyGdxGame.width/2);
+				
 				game.batch.end();
+				shaperenderer.begin(ShapeType.Filled);
+				shaperenderer.setColor(Color.BLUE);
+				shaperenderer.rect(healthbackX, healthbackY, healthbackWidth, healthbackHeight);
+				shaperenderer.end();
+				
+				shaperenderer.begin(ShapeType.Filled);
+				shaperenderer.setColor(Color.RED);
+				shaperenderer.rect(healthbackX+10, healthbackY+10, ratio, healthbackHeight-20);
+				shaperenderer.end();
 				left = false;
 				right = false;
 				up = false;
 				down = false;
+				if(mainP.getHealth() <= 0)
+				{
+				//will change the screen back to main menu for use on death of player
+				game.setScreen(new MainMenuScreen(game));
+				}
 		}
 			
 			if(paused)
@@ -491,11 +541,13 @@ public class MainGameScreen implements Screen{
 			{
 				
 			game.batch.draw(quitInactive, MyGdxGame.width/2 - quitbuttonWidth/2,  MyGdxGame.height/2 - quitbuttonHeight/2 - (buttonGap + continuebuttonHeight),quitbuttonWidth, quitbuttonHeight);
-		
+			
 			}
 			
 			game.batch.end();
 			}
+			
+		
 				
 	}
 

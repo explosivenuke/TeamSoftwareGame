@@ -8,12 +8,13 @@ public class Player extends Entity{
 	
 	double health;
 	public int speed = 2;
-	
+	double maxhealth;
 	
 	public Player(float initialX, float initialY, float sizeX, float sizeY, double speed, double initialHealth, boolean inv)
 	{
 		super(initialX, initialY, sizeX, sizeY, speed, initialHealth, inv);
 		health = initialHealth;
+		maxhealth = initialHealth;
 	}
 	
 	public float getxCoordinate()

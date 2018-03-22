@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.mygdx.game.MyGdxGame;
 
 public class MainMenuScreen implements Screen{
@@ -20,6 +21,7 @@ public class MainMenuScreen implements Screen{
 	private static int quitbuttonY = MyGdxGame.height/2 - quitbuttonHeight/2 - (buttonGap + startbuttonHeight);
 	int x = MyGdxGame.width/2 - startbuttonHeight;
 
+
  
 	Texture startActive;
 	Texture startInactive;
@@ -34,6 +36,7 @@ public class MainMenuScreen implements Screen{
 		startInactive = new Texture("start_red.png");
 		quitActive = new Texture("quit_green.png");
 		quitInactive = new Texture("quit_red.png");
+
 	}
 	
 	
@@ -50,6 +53,8 @@ public class MainMenuScreen implements Screen{
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		game.batch.begin();
+
+		
 		if(Gdx.input.getX() < x + startbuttonWidth && Gdx.input.getX() > x && MyGdxGame.height - Gdx.input.getY() < startbuttonY + startbuttonHeight && MyGdxGame.height - Gdx.input.getY() > startbuttonY)
 		{
 			game.batch.draw(startActive, MyGdxGame.width/2 - startbuttonWidth/2, MyGdxGame.height/2 - startbuttonHeight/2,startbuttonWidth,startbuttonHeight);
