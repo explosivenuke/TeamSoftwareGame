@@ -2,6 +2,7 @@ package com.mygdx.game.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -21,7 +22,7 @@ public class MainMenuScreen implements Screen{
 	private static int quitbuttonY = MyGdxGame.height/2 - quitbuttonHeight/2 - (buttonGap + startbuttonHeight);
 	int x = MyGdxGame.width/2 - startbuttonHeight;
 
-
+	Music music;
  
 	Texture startActive;
 	Texture startInactive;
@@ -36,6 +37,8 @@ public class MainMenuScreen implements Screen{
 		startInactive = new Texture("start_red.png");
 		quitActive = new Texture("quit_green.png");
 		quitInactive = new Texture("quit_red.png");
+		music = Gdx.audio.newMusic(Gdx.files.internal("menumusic.mp3"));
+
 
 	}
 	
@@ -43,7 +46,8 @@ public class MainMenuScreen implements Screen{
 	
 	@Override
 	public void show() {
-	
+		 music.isLooping();
+			music.play();
 
 	}
 

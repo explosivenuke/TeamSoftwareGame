@@ -6,15 +6,12 @@ public class Player extends Entity{
 	//getter and setters
 	
 	
-	double health;
 	public int speed = 2;
-	double maxhealth;
 	
-	public Player(float initialX, float initialY, float sizeX, float sizeY, double speed, double initialHealth, boolean inv)
+	
+	public Player(float initialX, float initialY, float sizeX, float sizeY, float speed, double initialHealth, boolean inv)
 	{
-		super(initialX, initialY, sizeX, sizeY, speed, initialHealth, inv);
-		health = initialHealth;
-		maxhealth = initialHealth;
+		super(initialX, initialY, sizeX, sizeY, speed, initialHealth, 0, inv, null, null, true);
 	}
 	
 	public float getxCoordinate()
