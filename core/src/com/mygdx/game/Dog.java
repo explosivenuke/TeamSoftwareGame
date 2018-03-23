@@ -10,6 +10,6 @@ public class Dog extends TrackerEnemy{
 		super(spawnX, spawnY, width, height, moveSpeed, maxHealth, damage, inv, img, batch, collisionLayer);
 	}
 	public void Draw() {
-		batch.draw(sprite, posX, posY, sizeX, sizeY);
+		batch.draw(sprite, posX, posY, sizeX+30, sizeY+30);
 	}
 }

@@ -137,14 +137,12 @@ public class MainGameScreen implements Screen {
 		img3 = new Texture("1.png");
 		img4 = new Texture("2.png");
 		img5 = new Texture("3.png");
-		// dog = new Texture("dog_left.png");
-		// mouse = new Texture("mouse_left.png");
+		 dog = new Texture("dog_left.png");
+		 mouse = new Texture("mouse_left.png");
 		// squirl is actually bird
-		// squirl = new Texture("bird_left.png");
+		 squirl = new Texture("bird_left.png");
 		bullet = new Texture("bullet.png");
-		dog = bullet;
-		squirl = bullet;
-		mouse = bullet;
+		
 		
 		backdrop = new Texture("backdrop.png");
 		shot = Gdx.audio.newSound(Gdx.files.internal("pew.wav"));
@@ -444,6 +442,7 @@ public class MainGameScreen implements Screen {
 		down = false;
 		if (mainP.getHealth() <= 0) {
 			// will change the screen back to main menu for use on death of player
+			music.stop();
 			game.setScreen(new MainMenuScreen(game));
 		}
 

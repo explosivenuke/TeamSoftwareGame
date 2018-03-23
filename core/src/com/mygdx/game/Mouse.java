@@ -30,5 +30,7 @@ public class Mouse extends TimerEnemy{
 		if(direction == 3) move(getPosX() + 1, getPosY());
 		if(direction == 4) move(getPosX() - 1, getPosY());
 		super.Draw();
+		super.sizeX = 30;
+		super.sizeY = 30;
 	}
 }

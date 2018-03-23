@@ -33,6 +33,8 @@ public class Squirl extends ShooterEnemy{
 		if(direction == 3) move(getPosX() + 1, getPosY());
 		if(direction == 4) move(getPosX() - 1, getPosY());
 		super.Draw();
+		super.sizeX = 30;
+		super.sizeY = 30;
 		
 	}
 	public Bullet trackPlayer(Entity player) {

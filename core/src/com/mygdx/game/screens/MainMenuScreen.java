@@ -68,6 +68,7 @@ public class MainMenuScreen implements Screen{
 				this.dispose();
 				MainGameScreen gamer = new MainGameScreen(game);
 				game.main = gamer;
+				music.stop();
 				game.setScreen(gamer);
 			}
 			
