@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 
 public class Bullet extends Entity {
 
@@ -15,8 +16,8 @@ public class Bullet extends Entity {
 	float Xspeed;
 	float Yspeed;
 	public Bullet(float spawnX, float spawnY, float width, float height, float moveSpeed, double damage, boolean inv,
-			 SpriteBatch map, boolean type, float targetX, float targetY) {
-		super(spawnX, spawnY, width, height, moveSpeed,1, damage, true, new Texture("bullet.png"), map, type);
+			 SpriteBatch map, boolean type, float targetX, float targetY, TiledMapTileLayer collisionLayer) {
+		super(spawnX, spawnY, width, height, moveSpeed,1, damage, true, new Texture("bullet.png"), map, type,collisionLayer);
 		float distance = (float) Math.sqrt(Math.pow(targetX - this.getCenterX(), 2) + Math.pow(targetY - this.getCenterY(), 2));
 		Xspeed = (targetX - this.getCenterX())/distance;
 		Yspeed = (targetY - this.getCenterY())/distance;

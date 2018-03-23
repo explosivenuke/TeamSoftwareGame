@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+
 public class Player extends Entity{
 	
 	//variables for player position health and speed and their corresponding
@@ -9,9 +11,9 @@ public class Player extends Entity{
 	public int speed = 2;
 	
 	
-	public Player(float initialX, float initialY, float sizeX, float sizeY, float speed, double initialHealth, boolean inv)
+	public Player(float initialX, float initialY, float sizeX, float sizeY, float speed, double initialHealth, boolean inv, TiledMapTileLayer collisionLayer)
 	{
-		super(initialX, initialY, sizeX, sizeY, speed, initialHealth, 0, inv, null, null, true);
+		super(initialX, initialY, sizeX, sizeY, speed, initialHealth, 0, inv, null, null, true,collisionLayer);
 	}
 	
 	public float getxCoordinate()
@@ -46,6 +48,10 @@ public class Player extends Entity{
 		health = newHealth;
 	}
 	
+	public TiledMapTileLayer getCollisionLayer()
+	{
+		return collisionLayer;
+	}
 	
 	
 	

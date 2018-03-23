@@ -7,6 +7,7 @@ import javax.swing.Timer;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 
 public class Mouse extends TimerEnemy{
 	int direction;
@@ -17,8 +18,8 @@ public class Mouse extends TimerEnemy{
 	};
 	Timer emimymove = new Timer(1000, taskPerformer);
 	public Mouse(float spawnX, float spawnY, float width, float height, float moveSpeed, double maxHealth, double damage, boolean inv,
-			Texture img, SpriteBatch map) {
-		super(spawnX, spawnY, width, height, moveSpeed, maxHealth, damage, inv, img, map);
+			Texture img, SpriteBatch map, TiledMapTileLayer collisionLayer) {
+		super(spawnX, spawnY, width, height, moveSpeed, maxHealth, damage, inv, img, map, collisionLayer);
 		direction = 0;
 		emimymove.setInitialDelay(10);
 		emimymove.start();
