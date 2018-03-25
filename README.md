@@ -4,4 +4,4 @@ Music: https://www.bensound.com
 
 Instructions:
 
-Controls: arrow keys to control movement and click to shoot in that direction
+Controls: arrow keys to control movement and click to shoot in that direction escape to pause the game
