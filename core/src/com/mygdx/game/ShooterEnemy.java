@@ -16,7 +16,7 @@ public class ShooterEnemy extends Entity{
 		float Xspeed = (player.getCenterX() - this.getCenterX())/distance;
 		float Yspeed = (player.getCenterY() - this.getCenterY())/distance;
 		move(getPosX() + Xspeed*speed, getPosY() + Yspeed*speed);
-		return Spawner.spawnBullet(getPosX(), getPosY(), sizeX-20, sizeY-20, 2, 100, true, batch, false, player.getCenterX(), player.getCenterY(), collisionLayer);
+		return Spawner.spawnBullet(getPosX(), getPosY(), sizeX-20, sizeY-20, 2, 10, true, batch, false, player.getCenterX(), player.getCenterY(), collisionLayer);
 	}
 
 }
