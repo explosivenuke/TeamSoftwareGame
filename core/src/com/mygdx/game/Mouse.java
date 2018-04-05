@@ -18,8 +18,8 @@ public class Mouse extends TimerEnemy{
 	};
 	Timer emimymove = new Timer(1000, taskPerformer);
 	public Mouse(float spawnX, float spawnY, float width, float height, float moveSpeed, double maxHealth, double damage, boolean inv,
-			Texture img, SpriteBatch map, TiledMapTileLayer collisionLayer) {
-		super(spawnX, spawnY, width, height, moveSpeed, maxHealth, damage, inv, img, map, collisionLayer);
+			Texture img, SpriteBatch map, TiledMapTileLayer collisionLayer, int pointval) {
+		super(spawnX, spawnY, width, height, moveSpeed, maxHealth, damage, inv, img, map, collisionLayer, pointval);
 		direction = 0;
 		emimymove.setInitialDelay(10);
 		emimymove.start();
@@ -30,7 +30,7 @@ public class Mouse extends TimerEnemy{
 		if(direction == 3) move(getPosX() + 1, getPosY());
 		if(direction == 4) move(getPosX() - 1, getPosY());
 		super.Draw();
-		super.sizeX = 30;
-		super.sizeY = 30;
+		super.sizeX = 7;
+		super.sizeY = 7;
 	}
 }

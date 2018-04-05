@@ -19,6 +19,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
 import com.mygdx.game.Bullet;
 import com.mygdx.game.Entity;
 import com.mygdx.game.MyGdxGame;
@@ -27,6 +28,7 @@ import com.mygdx.game.ShooterEnemy;
 import com.mygdx.game.Spawner;
 import com.mygdx.game.Tile;
 import com.mygdx.game.TrackerEnemy;
+import com.mygdx.game.powerup;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -44,6 +46,10 @@ public class MainGameScreen implements Screen {
 	Texture squirl;
 	Texture dog;
 	Texture mouse;
+	Texture powerup1;
+	Texture powerup2;
+	Texture powerup3;
+	Texture powerup4;
 	boolean up;
 	boolean down;
 	boolean left;
@@ -70,7 +76,7 @@ public class MainGameScreen implements Screen {
 	boolean isOverlappingFloor;
 	boolean isBulletOverlappingCeiling;
 	boolean isBulletOverlappingFloor;
-
+	int score = 0;
 	ShapeRenderer shaperenderer;
 	Tile ceiling;
 	Tile floor;
@@ -79,6 +85,7 @@ public class MainGameScreen implements Screen {
 
 	ArrayList<TrackerEnemy> trackers;
 	ArrayList<Entity> basicEntity;
+	ArrayList<powerup> powerups;
 	ArrayList<ShooterEnemy> shooters;
 
 	private static int backdropHeight = MyGdxGame.height - 120;
@@ -101,7 +108,11 @@ public class MainGameScreen implements Screen {
 	private static int quitbuttonY = MyGdxGame.height / 2 - quitbuttonHeight / 2 - (buttonGap + continuebuttonHeight);
 	int x = MyGdxGame.width / 2 - continuebuttonHeight;
 	int ratio;
-
+	
+	Vector3 vect = new Vector3();
+	Vector3 vect1 = new Vector3();
+	Vector3 pcvect = new Vector3();
+	Vector3 pevect = new Vector3();
 	Texture continueActive;
 	Texture continueInactive;
 	Texture quitActive;
@@ -117,6 +128,7 @@ public class MainGameScreen implements Screen {
 	private TiledMap map;
 	private OrthogonalTiledMapRenderer renderer;
 	private OrthographicCamera camera;
+	private OrthographicCamera hudcam;
 
 	public MainGameScreen(MyGdxGame game) {
 		this.game = game;
@@ -141,7 +153,11 @@ public class MainGameScreen implements Screen {
 		// squirl is actually bird
 		squirl = new Texture("bird_left.png");
 		bullet = new Texture("bullet.png");
-
+		powerup1 = new Texture("potion1.png");
+		powerup2 = new Texture("potion2.png");
+		powerup3 = new Texture("potion3.png");
+		powerup4 = new Texture("potion4.png");
+		game.score = 0;
 		backdrop = new Texture("backdrop.png");
 		shot = Gdx.audio.newSound(Gdx.files.internal("pew.wav"));
 		music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
@@ -171,26 +187,31 @@ public class MainGameScreen implements Screen {
 		map = new TmxMapLoader().load("Map1.tmx");
 		renderer = new OrthogonalTiledMapRenderer(map);
 		camera = new OrthographicCamera();
-
-		mainP = new Player(50, 50, 30, 30, 2, 100, false, (TiledMapTileLayer) map.getLayers().get(0));
+		hudcam = new OrthographicCamera();
+		mainP = new Player(50, 50, 10, 10, 2, 100, false, (TiledMapTileLayer) map.getLayers().get(0), 100);
 		mainP.setXCoordinate(11 * mainP.getCollisionLayer().getTileWidth());
 		mainP.setYCoordinate(20 * mainP.getCollisionLayer().getTileHeight());
 
 		trackers = new ArrayList<TrackerEnemy>();
-		trackers.add(Spawner.spawnDog(500, 500, 10, 10, 1.5f, 3, 25, dog, game.batch,
-				(TiledMapTileLayer) map.getLayers().get(0)));
+		trackers.add(Spawner.spawnDog(500, 500, 5, 5, 1.5f, 3, 25, dog, game.batch,
+				(TiledMapTileLayer) map.getLayers().get(0), 10));
 		shooters = new ArrayList<ShooterEnemy>();
-		shooters.add(Spawner.spawnSquirl(MyGdxGame.width / 2, MyGdxGame.height / 2, 10, 10, 1, 3, 10, squirl,
-				game.batch, (TiledMapTileLayer) map.getLayers().get(0)));
+		shooters.add(Spawner.spawnSquirl(MyGdxGame.width / 2, MyGdxGame.height / 2, 5, 5, 1, 3, 10, squirl,
+				game.batch, (TiledMapTileLayer) map.getLayers().get(0), 5, camera));
 		basicEntity = new ArrayList<Entity>();
-		basicEntity.add(Spawner.spawnMouse(MyGdxGame.width / 2, MyGdxGame.height / 2, 10, 10, 1, 3, 10, mouse,
-				game.batch, (TiledMapTileLayer) map.getLayers().get(0)));
+		basicEntity.add(Spawner.spawnMouse(MyGdxGame.width / 2, MyGdxGame.height / 2, 5, 5, 1, 3, 10, mouse,
+				game.batch, (TiledMapTileLayer) map.getLayers().get(0), 1));
+		powerups = new ArrayList<powerup>();
+		powerups.add(Spawner.spawnPowerup(MyGdxGame.width / 2, MyGdxGame.height / 2, 10, 10, 0, 100000, 0, powerup1,
+				game.batch, (TiledMapTileLayer) map.getLayers().get(0), 'h'));
+		hudcam.position.set(MyGdxGame.width , MyGdxGame.height , 0);
+		hudcam.setToOrtho(false, MyGdxGame.width, MyGdxGame.height);
 	}
 
 	@Override
 	public void render(float delta) {
-
-		ratio = (int) ((mainP.getHealth() / 100) * (healthbackWidth - 20));
+		
+		ratio = (int) ((mainP.getHealth() / mainP.maxHealth) * (healthbackWidth - 20));
 
 		// clearing color and setting background color
 		Gdx.gl.glClearColor(1, 0, 0, 1);
@@ -199,7 +220,7 @@ public class MainGameScreen implements Screen {
 		// Set camera position
 		camera.position.set(mainP.getPosX() + mainP.sizeX / 2, mainP.getPosY() + mainP.sizeY / 2, 0);
 		camera.update();
-
+	
 		// Render Tiled Map
 		renderer.setView(camera);
 
@@ -250,8 +271,10 @@ public class MainGameScreen implements Screen {
 			// game.setScreen(new PauseMenuScreen(game,main));
 
 		}
+		game.batch.setProjectionMatrix(camera.combined);
 		renderer.render();
-
+		vect1.x = mainP.getCenterX();
+		vect1.y = mainP.getCenterY();
 		if (!paused) {
 
 			if (Gdx.input.isKeyPressed(Keys.UP)) {
@@ -304,17 +327,26 @@ public class MainGameScreen implements Screen {
 			// if(direction == 4) mainP.setXCoordinate(mainP.getxCoordinate() - 1);
 
 			// allows player to shoot using space bar is obsolete and will be replaced
-			// by mouse oonce fully functioning
+			// by mouse once fully functioning
 
 			// takes mouse click position and fires bullet at correct anle and speed
 			// accordingly
 			if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
 
 				if (bulletIsLoaded) {
+					Vector3 vecto = new Vector3();
 					float targetX = Gdx.input.getX() - 10;
-					float targetY = Gdx.graphics.getHeight() - 1 - Gdx.input.getY();
-					basicEntity.add(Spawner.spawnBullet(mainP.getCenterX(), mainP.getCenterY(), 10, 10, 2, 100, true,
-							game.batch, true, targetX, targetY, (TiledMapTileLayer) map.getLayers().get(0)));
+					float targetY =  Gdx.input.getY();
+					vecto.x = targetX;
+					vecto.y = targetY;
+					camera.unproject(vecto);
+					
+					
+					vect.x = MyGdxGame.width/2;
+					vect.y = MyGdxGame.height/2;
+					camera.unproject(vect);
+					basicEntity.add(Spawner.spawnBullet(vect.x -5, vect.y + 5, 5, 5, 1, 100, true,
+							game.batch, true, vecto.x, vecto.y, (TiledMapTileLayer) map.getLayers().get(0), camera));
 					shot.play(1.0f);
 					bulletIsLoaded = false;
 				}
@@ -361,53 +393,98 @@ public class MainGameScreen implements Screen {
 					basicEntity.add(b);
 				}
 				if (e.collide(mainP.collision)) {
-					mainP.setHealth(mainP.getHealth() - e.damage);
-					
+					if (e.damage > 0) {
+						mainP.setHealth(mainP.getHealth() - e.damage, e);
+					}
+
 				}
 				e.Draw();
 			}
+			
+
 			for (TrackerEnemy e : trackers) {
 				e.trackPlayer(mainP);
 				if (e.collide(mainP.collision)) {
-					mainP.setHealth(mainP.getHealth() - e.damage);
+					if (e.damage > 0) {
+						mainP.setHealth(mainP.getHealth() - e.damage, e);
+					}
 				}
 				e.Draw();
 			}
+			boolean clear = true;
 			for (Entity e : basicEntity) {
-				if (e.collide(mainP.collision)) {
-					if (e.fof != mainP.fof) {
-						mainP.setHealth(mainP.getHealth() - e.damage);
-						e.hurt(5);
+				if (e.fof != mainP.fof) {
+					clear = false;
+					if (e.collide(mainP.collision)) {
+					
+						if (e.damage > 0) {
+							mainP.setHealth(mainP.getHealth() - e.damage, e);
+
+							e.hurt(5);
+						}
 					}
 
 				}
 				for (Entity w : basicEntity) {
 					if (e.collide(w.collision)) {
 						if (e.fof != w.fof) {
-							e.hurt(w.damage);
-							w.hurt(e.damage);
+							if (e.damage > 0 && w.damage > 0) {
+								e.hurt(w.damage);
+								game.score += e.pointval;
+
+								w.hurt(e.damage);
+							}
+
 						}
 					}
 				}
 				for (Entity w : trackers) {
 					if (e.collide(w.collision)) {
 						if (e.fof != w.fof) {
-							e.hurt(w.damage);
-							w.hurt(e.damage);
+							if (e.damage > 0 && w.damage > 0) {
+								e.hurt(w.damage);
+
+								game.score += e.pointval;
+								game.score += w.pointval;
+								w.hurt(e.damage);
+							}
 						}
 					}
 				}
 				for (Entity w : shooters) {
 					if (e.collide(w.collision)) {
 						if (e.fof != w.fof) {
-							e.hurt(w.damage);
-							w.hurt(e.damage);
+
+							if (e.damage > 0 && w.damage > 0) {
+								e.hurt(w.damage);
+								game.score += e.pointval;
+								game.score += w.pointval;
+								w.hurt(e.damage);
+							}
 
 						}
 					}
 				}
 
 				e.Draw();
+			}
+			if (shooters.isEmpty() && trackers.isEmpty() && clear) {
+				for (powerup e : powerups) {
+
+					if (e.collide(mainP.collision)) {
+						e.health = -1;
+
+						if (e.poweruptype == 'h') {
+							mainP.maxHealth += 5;
+							mainP.hurt(-5);
+							healthbackWidth += 5;
+						}
+						
+						
+
+					}
+					e.Draw();
+				}
 			}
 			Iterator<Entity> test = basicEntity.iterator();
 			while (test.hasNext()) {
@@ -430,7 +507,24 @@ public class MainGameScreen implements Screen {
 					test3.remove();
 				}
 			}
+
+			
+			Iterator<powerup> powerupss = powerups.iterator();
+			while (powerupss.hasNext()) {
+				Entity help = powerupss.next();
+				if (help.health <= 0) {
+					powerupss.remove();
+				}
+			}
+			
+
 		}
+
+		game.batch.end();
+		game.batch.setProjectionMatrix(hudcam.combined);
+		game.batch.begin();
+		font.draw(game.batch, "Score:  " + Integer.toString(game.score), game.width - game.width / 10,
+				game.height - game.height / 20);
 		game.batch.end();
 		shaperenderer.begin(ShapeType.Filled);
 		shaperenderer.setColor(Color.BLUE);
@@ -450,14 +544,15 @@ public class MainGameScreen implements Screen {
 		if (mainP.getHealth() <= 0) {
 			// will change the screen back to main menu for use on death of player
 			music.stop();
-			game.setScreen(new MainMenuScreen(game));
+			game.setScreen(new MainMenuScreen(game, game.score,hudcam));
 		}
 
 		if (paused) {
-
+			game.batch.setProjectionMatrix(hudcam.combined);
+			renderer.setView(hudcam);
+			renderer.render();
 			game.batch.begin();
 			music.stop();
-
 			game.batch.draw(backdrop, MyGdxGame.width / 2 - backdropWidth / 2,
 					MyGdxGame.height / 2 - backdropHeight / 2, backdropWidth, backdropHeight);
 
@@ -466,7 +561,7 @@ public class MainGameScreen implements Screen {
 					&& MyGdxGame.height - Gdx.input.getY() > continuebuttonY) {
 				game.batch.draw(continueActive, MyGdxGame.width / 2 - continuebuttonWidth / 2,
 						MyGdxGame.height / 2 - continuebuttonHeight / 2, continuebuttonWidth, continuebuttonHeight);
-
+			
 				if (Gdx.input.isTouched()) {
 					// this.dispose();
 					resume();
@@ -474,8 +569,11 @@ public class MainGameScreen implements Screen {
 
 			} else {
 				game.batch.draw(continueInactive, MyGdxGame.width / 2 - continuebuttonWidth / 2,
-						MyGdxGame.height / 2 - continuebuttonHeight / 2, continuebuttonWidth, continuebuttonHeight);
+					MyGdxGame.height / 2 - continuebuttonHeight / 2, continuebuttonWidth, continuebuttonHeight);
 
+				
+
+				
 			}
 
 			if (Gdx.input.getX() < x + quitbuttonWidth && Gdx.input.getX() > x
@@ -497,6 +595,8 @@ public class MainGameScreen implements Screen {
 						quitbuttonWidth, quitbuttonHeight);
 
 			}
+			font.draw(game.batch, "Score:  " + Integer.toString(game.score), game.width - game.width / 10,
+					game.height - game.height / 20);
 
 			game.batch.end();
 		}
@@ -507,6 +607,8 @@ public class MainGameScreen implements Screen {
 	public void resize(int width, int height) {
 		camera.viewportWidth = width / 5;
 		camera.viewportHeight = height / 5;
+		hudcam.viewportWidth = width / 5;
+		hudcam.viewportHeight = height / 5;
 	}
 
 	@Override

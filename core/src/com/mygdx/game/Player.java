@@ -14,7 +14,7 @@ public class Player extends Entity {
 
 	public int speed = 2;
 	public boolean justhit;
-
+	public int maxHealth;
 	Timer emimymove = new Timer(1000, new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
 			justhit = false;
@@ -23,8 +23,10 @@ public class Player extends Entity {
 	});
 
 	public Player(float initialX, float initialY, float sizeX, float sizeY, float speed, double initialHealth,
-			boolean inv, TiledMapTileLayer collisionLayer) {
-		super(initialX, initialY, sizeX, sizeY, speed, initialHealth, 0, inv, null, null, true, collisionLayer);
+			boolean inv, TiledMapTileLayer collisionLayer, int maxHealth) {
+		super(initialX, initialY, sizeX, sizeY, speed, initialHealth, 0, inv, null, null, true, collisionLayer,0);
+		this.maxHealth = maxHealth;
+
 	}
 
 	public float getxCoordinate() {
@@ -49,13 +51,13 @@ public class Player extends Entity {
 		return health;
 	}
 
-	public void setHealth(double newHealth) {
+	public void setHealth(double newHealth, Entity enemy) {
 
 		if (!justhit) {
 			health = newHealth;
 			justhit = true;
 			emimymove.start();
-			move(getPosX() - 20, getPosY());
+			move(getPosX() - 5, getPosY() - 5);
 		}
 
 	}

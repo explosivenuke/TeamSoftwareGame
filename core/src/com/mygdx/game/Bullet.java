@@ -1,8 +1,10 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.math.Vector3;
 
 public class Bullet extends Entity {
 
@@ -15,16 +17,33 @@ public class Bullet extends Entity {
 	
 	float Xspeed;
 	float Yspeed;
+	float maxDistance = 1000;
+	Vector3 vect;
+	Vector3 vector;
+	public OrthographicCamera camera;
+	
+			
+	
 	public Bullet(float spawnX, float spawnY, float width, float height, float moveSpeed, double damage, boolean inv,
-			 SpriteBatch map, boolean type, float targetX, float targetY, TiledMapTileLayer collisionLayer) {
-		super(spawnX, spawnY, width, height, moveSpeed,1, damage, true, new Texture("bullet.png"), map, type,collisionLayer);
+			 SpriteBatch map, boolean type, float targetX, float targetY, TiledMapTileLayer collisionLayer, OrthographicCamera camera) {
+		super(spawnX, spawnY, width, height, moveSpeed,1, damage, true, new Texture("bullet.png"), map, type,collisionLayer,0);
+		this.camera = camera;
 		float distance = (float) Math.sqrt(Math.pow(targetX - this.getCenterX(), 2) + Math.pow(targetY - this.getCenterY(), 2));
 		Xspeed = (targetX - this.getCenterX())/distance;
 		Yspeed = (targetY - this.getCenterY())/distance;
 		
+		vect = new Vector3();
 	}
 	public void Draw() {
-		move(getPosX() + Xspeed*speed, getPosY() + Yspeed*speed);
+		
+		vect.x = getPosX();
+		vect.y = getPosY();
+		
+		move(vect.x + Xspeed*speed, vect.y + Yspeed*speed);
+		maxDistance -= speed;
+		if(maxDistance <= 0) {
+			health = -1;
+		}
 		super.Draw();
 	}
 

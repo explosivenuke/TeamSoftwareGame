@@ -13,8 +13,8 @@ public class TimerEnemy extends Entity{
 //	};
 	
 	public TimerEnemy(float spawnX, float spawnY, float width, float height, float moveSpeed, double maxHealth, double damage,
-			boolean inv, Texture img, SpriteBatch map, TiledMapTileLayer collisionLayer) {
-		super(spawnX, spawnY, width, height, moveSpeed, maxHealth, damage, inv, img, map, false, collisionLayer);
+			boolean inv, Texture img, SpriteBatch map, TiledMapTileLayer collisionLayer, int pointval) {
+		super(spawnX, spawnY, width, height, moveSpeed, maxHealth, damage, inv, img, map, false, collisionLayer, pointval);
 //		direction = 0;
 		
 	}

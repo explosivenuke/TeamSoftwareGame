@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.Timer;
 
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -20,8 +21,8 @@ public class Squirl extends ShooterEnemy{
 	};
 	Timer emimymove = new Timer(250, taskPerformer);
 	public Squirl(float spawnX, float spawnY, float width, float height, float moveSpeed, double maxHealth, double damage, boolean inv,
-			Texture img, SpriteBatch map, TiledMapTileLayer collisionLayer) {
-		super(spawnX, spawnY, width, height, moveSpeed, maxHealth, damage, inv, img, map, collisionLayer);
+			Texture img, SpriteBatch map, TiledMapTileLayer collisionLayer, int pointval, OrthographicCamera camera) {
+		super(spawnX, spawnY, width, height, moveSpeed, maxHealth, damage, inv, img, map, collisionLayer, pointval, camera);
 		direction = 0;
 		emimymove.setInitialDelay(10);
 		emimymove.start();
@@ -33,8 +34,7 @@ public class Squirl extends ShooterEnemy{
 		if(direction == 3) move(getPosX() + 1, getPosY());
 		if(direction == 4) move(getPosX() - 1, getPosY());
 		super.Draw();
-		super.sizeX = 30;
-		super.sizeY = 30;
+		
 		
 	}
 	public Bullet trackPlayer(Entity player) {

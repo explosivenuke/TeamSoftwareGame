@@ -33,10 +33,15 @@ public class MyGdxGame extends Game {
 	public static int height = 768;
 	public MainGameScreen main;
 	public SpriteBatch batch;
-
+	public int score;
 	public void create () {
+		
 		batch = new SpriteBatch();
-		this.setScreen(new MainMenuScreen(this));
+		OrthographicCamera cam = new OrthographicCamera();
+		cam.position.set(MyGdxGame.width, MyGdxGame.height, 0);
+		batch.setProjectionMatrix(cam.combined);
+
+		this.setScreen(new MainMenuScreen(this, score,cam));
 	}
 
 	public void render () {

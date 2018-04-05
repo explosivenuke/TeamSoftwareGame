@@ -19,8 +19,9 @@ Texture sprite;
 public Rectangle collision;
 public double damage;
 TiledMapTileLayer collisionLayer;
+public int pointval = 0;
 	public Entity(float spawnX, float spawnY, float width, float height, float moveSpeed, double maxHealth, double damage,
-			boolean inv, Texture img, SpriteBatch map, boolean freindly, TiledMapTileLayer collisionLayer) {
+			boolean inv, Texture img, SpriteBatch map, boolean freindly, TiledMapTileLayer collisionLayer, int pointval) {
 		posX = spawnX;
 		posY = spawnY;
 		sizeX = width;
@@ -33,6 +34,7 @@ TiledMapTileLayer collisionLayer;
 		this.damage = damage;
 		collision = new Rectangle(spawnX, spawnY, width, height);
 		fof = freindly;
+		this.pointval = pointval;
 		this.collisionLayer = collisionLayer;
 	}
 	public float getCenterX() {
@@ -49,6 +51,7 @@ TiledMapTileLayer collisionLayer;
 	}
 	public void hurt(double damage) {
 		health -= damage;
+		
 	}
 	public void move(float newX, float newY) {
 		// Saves Old Position
