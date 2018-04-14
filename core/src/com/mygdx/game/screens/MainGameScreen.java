@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -19,9 +20,24 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.Manifold;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+import com.mygdx.game.B2WorldCreator;
+import com.mygdx.game.Bird;
 import com.mygdx.game.Bullet;
+import com.mygdx.game.Dog;
 import com.mygdx.game.Entity;
+import com.mygdx.game.Mouse;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Player;
 import com.mygdx.game.ShooterEnemy;
@@ -30,6 +46,11 @@ import com.mygdx.game.Tile;
 import com.mygdx.game.TrackerEnemy;
 import com.mygdx.game.powerup;
 
+import javax.swing.Timer;
+
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -57,7 +78,7 @@ public class MainGameScreen implements Screen {
 	int last = 0;
 	int screensize = 1000;
 	int bulletheight = 2;
-	float bulletSpeed = 2;
+	float bulletspeed = 5;
 	float BulletGap = 0;
 	Rectangle rectanglePlayer;
 	Rectangle rectangleCeiling;
@@ -76,13 +97,16 @@ public class MainGameScreen implements Screen {
 	boolean isOverlappingFloor;
 	boolean isBulletOverlappingCeiling;
 	boolean isBulletOverlappingFloor;
+	boolean reloading = false;
 	int score = 0;
 	ShapeRenderer shaperenderer;
 	Tile ceiling;
 	Tile floor;
 	static int buttonGap = 10;
 	BitmapFont font;
-
+	float playerdamage;
+	
+	
 	ArrayList<TrackerEnemy> trackers;
 	ArrayList<Entity> basicEntity;
 	ArrayList<powerup> powerups;
@@ -100,14 +124,37 @@ public class MainGameScreen implements Screen {
 
 	private static int continuebuttonHeight = 50;
 	private static int continuebuttonWidth = 300;
-	private static int continuebuttonX = MyGdxGame.width / 2 - continuebuttonWidth / 2;
 	private static int continuebuttonY = MyGdxGame.height / 2 - continuebuttonHeight / 2;
 	private static int quitbuttonHeight = 50;
 	private static int quitbuttonWidth = 300;
 	private static int quitbuttonX = MyGdxGame.width / 2 - quitbuttonWidth / 2;
 	private static int quitbuttonY = MyGdxGame.height / 2 - quitbuttonHeight / 2 - (buttonGap + continuebuttonHeight);
+	
+	
+	// New code added from Example Game
+		private TextureAtlas atlas;
+		private OrthographicCamera camera;
+		private Viewport gamePort;
+		private TmxMapLoader maploader;
+		private TiledMap map;
+		private OrthogonalTiledMapRenderer renderer;
+		private World world;
+		private Box2DDebugRenderer b2dr;
+		private Dog dog1;
+		private Mouse mouse1;
+		private Bird bird1;
+	
+	
+	
 	int x = MyGdxGame.width / 2 - continuebuttonHeight;
+	int remainingbullets = 100;
+	int magcapacity = 100;
+	int weaponWidth = 20;
+	int weaponHeight = 20;
 	int ratio;
+	int bulletsize = 5;
+	char type;
+
 	
 	Vector3 vect = new Vector3();
 	Vector3 vect1 = new Vector3();
@@ -118,18 +165,27 @@ public class MainGameScreen implements Screen {
 	Texture quitActive;
 	Texture quitInactive;
 	Texture backdrop;
+	Texture shotgun;
+	Texture pistol;
+	Texture machinegun;
+	Texture casing;
+	public double basebulletspeed;
 
 	// variables for controlling bullet speed
 	float bullSpeedX;
 	float bullSpeedY;
-	boolean created = false;
-
-	// Environment Variables
-	private TiledMap map;
-	private OrthogonalTiledMapRenderer renderer;
-	private OrthographicCamera camera;
+	boolean created = false;	
 	private OrthographicCamera hudcam;
 
+	Timer timer = new Timer(250, new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+		reloading = false;
+		remainingbullets = magcapacity;
+		timer.stop();
+		}
+	});
+	
+	
 	public MainGameScreen(MyGdxGame game) {
 		this.game = game;
 		main = game.main;
@@ -157,11 +213,74 @@ public class MainGameScreen implements Screen {
 		powerup2 = new Texture("potion2.png");
 		powerup3 = new Texture("potion3.png");
 		powerup4 = new Texture("potion4.png");
+		pistol = new Texture("pistol.png");
+		shotgun = new Texture("shotgun.png");
+		machinegun = new Texture("machinegun.png");
+		casing = new Texture("casing.png");
 		game.score = 0;
+		type = 'm';
 		backdrop = new Texture("backdrop.png");
 		shot = Gdx.audio.newSound(Gdx.files.internal("pew.wav"));
 		music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+		
+
+		// New code added from Example Game
+		atlas = new TextureAtlas("player_and enemies.pack");
+		camera = new OrthographicCamera();
+		gamePort = new FitViewport(MyGdxGame.V_Width / MyGdxGame.PPM, MyGdxGame.V_Height / MyGdxGame.PPM, camera);
+		maploader = new TmxMapLoader();
+		map = maploader.load("Map1_4.tmx");
+		renderer = new OrthogonalTiledMapRenderer(map, 1 / MyGdxGame.PPM);
+		camera.position.set(gamePort.getWorldWidth() / 2, gamePort.getWorldHeight() / 2, 0);
+		world = new World(new Vector2(0, 0), true);
+		b2dr = new Box2DDebugRenderer();
+		new B2WorldCreator(world, map);
+		createCollisionListener();
+		
+		
+		
 	}
+	
+	// New Method
+		private void createCollisionListener(){
+			
+			world.setContactListener(new ContactListener() {
+
+				@Override
+				public void beginContact(Contact contact) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void endContact(Contact contact) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void preSolve(Contact contact, Manifold oldManifold) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void postSolve(Contact contact, ContactImpulse impulse) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+			});
+			
+		}
+
+		public TextureAtlas getAtlas() {
+			
+			return atlas;
+		
+		}
+	
+	
 
 	@Override
 	public void show() {
@@ -184,29 +303,123 @@ public class MainGameScreen implements Screen {
 		float slope;
 
 		// Show the Tiled Map
-		map = new TmxMapLoader().load("Map1.tmx");
-		renderer = new OrthogonalTiledMapRenderer(map);
-		camera = new OrthographicCamera();
 		hudcam = new OrthographicCamera();
-		mainP = new Player(50, 50, 10, 10, 2, 100, false, (TiledMapTileLayer) map.getLayers().get(0), 100);
-		mainP.setXCoordinate(11 * mainP.getCollisionLayer().getTileWidth());
-		mainP.setYCoordinate(20 * mainP.getCollisionLayer().getTileHeight());
 
+		mainP = new Player(50, 50, 10, 10, 2, 100, false, 100, world, this);
+		
+		// Changed
 		trackers = new ArrayList<TrackerEnemy>();
-		trackers.add(Spawner.spawnDog(500, 500, 5, 5, 1.5f, 3, 25, dog, game.batch,
-				(TiledMapTileLayer) map.getLayers().get(0), 10));
+		dog1 = Spawner.spawnDog(50, 50, 5, 5, 1.5f, 3, 25, dog, game.batch, 10, world, this);
+		trackers.add(dog1);
 		shooters = new ArrayList<ShooterEnemy>();
-		shooters.add(Spawner.spawnSquirl(MyGdxGame.width / 2, MyGdxGame.height / 2, 5, 5, 1, 3, 10, squirl,
-				game.batch, (TiledMapTileLayer) map.getLayers().get(0), 5, camera));
+		bird1 = Spawner.spawnBird(50, 40, 5, 5, 1, 3, 10, squirl, game.batch, 5, camera, world, this);
+		shooters.add(bird1);
 		basicEntity = new ArrayList<Entity>();
-		basicEntity.add(Spawner.spawnMouse(MyGdxGame.width / 2, MyGdxGame.height / 2, 5, 5, 1, 3, 10, mouse,
-				game.batch, (TiledMapTileLayer) map.getLayers().get(0), 1));
+		mouse1 = Spawner.spawnMouse(50, 30, 5, 5, 1, 3, 10, mouse, game.batch, 1, world, this);
+		basicEntity.add(mouse1);
 		powerups = new ArrayList<powerup>();
-		powerups.add(Spawner.spawnPowerup(MyGdxGame.width / 2, MyGdxGame.height / 2, 10, 10, 0, 100000, 0, powerup1,
-				game.batch, (TiledMapTileLayer) map.getLayers().get(0), 'h'));
+		powerups.add(Spawner.spawnPowerup(50, 20, 10, 10, 0, 100000, 0, powerup1, game.batch, 'h', 
+				world, this));
 		hudcam.position.set(MyGdxGame.width , MyGdxGame.height , 0);
 		hudcam.setToOrtho(false, MyGdxGame.width, MyGdxGame.height);
+		
+		powerups = new ArrayList<powerup>();
+		//powerups.add(Spawner.spawnPowerup(MyGdxGame.width / 2, MyGdxGame.height / 2, 10, 10, 0, 100000, 0, powerup1,
+			//	game.batch, (TiledMapTileLayer) map.getLayers().get(0), 'h'));
+		powerups.add(Spawner.spawnPowerup(MyGdxGame.width / 2, MyGdxGame.height / 2, 10, 10, 0, 100000, 0, powerup2,
+				game.batch,'d', world, this));
+
+		hudcam.position.set(MyGdxGame.width , MyGdxGame.height , 0);
+		hudcam.setToOrtho(false, MyGdxGame.width, MyGdxGame.height);
+		playerdamage = 1;
+		bulletspeed = 5;
+		basebulletspeed = bulletspeed;
+
+		mainP.basedamage = mainP.damage;
 	}
+	
+	
+	// Updated
+		public void handleInput(float dt) {
+			
+			float x = 0;
+			float y = 0;
+			
+			if(Gdx.input.isKeyPressed(Input.Keys.UP) && mainP.b2body.getLinearVelocity().y <= 2) {
+				
+				y += mainP.speed;
+//				mainP.b2body.applyLinearImpulse(new Vector2(0, 0.1f), mainP.b2body.getWorldCenter(), true);
+				
+			}
+			
+			if(Gdx.input.isKeyPressed(Input.Keys.DOWN) && mainP.b2body.getLinearVelocity().y >= -2) {
+				
+				y -= mainP.speed;
+//				mainP.b2body.applyLinearImpulse(new Vector2(0, -0.1f), mainP.b2body.getWorldCenter(), true);
+				
+			}
+			
+			if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && mainP.b2body.getLinearVelocity().x >= -2) {
+				
+				x -= mainP.speed;
+//				mainP.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), mainP.b2body.getWorldCenter(), true);
+				
+			}
+			
+			if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && mainP.b2body.getLinearVelocity().x <= 2) {
+				
+				x += mainP.speed;
+//				mainP.b2body.applyLinearImpulse(new Vector2(0.1f, 0), mainP.b2body.getWorldCenter(), true);
+				
+			}
+			
+			if(x != 0) {
+				
+				mainP.b2body.setLinearVelocity(x * 100 * dt, mainP.b2body.getLinearVelocity().y);
+				
+			}
+			
+			if(y != 0) {
+				
+				mainP.b2body.setLinearVelocity(mainP.b2body.getLinearVelocity().x, y * 100 * dt);
+				
+			}
+			
+			// Handle Dog movement here
+			
+			// Handle Mouse movement here
+			
+			// Handle Squirl/Bird movement here
+			
+		}
+	
+		
+		// Updated
+		public void update(float dt) {
+			
+			handleInput(dt);
+			
+			world.step(1/60f, 6, 2);
+			
+			mainP.update(dt);
+			
+			// Update Dog
+			dog1.update(dt);
+			
+			// Update Mouse
+			mouse1.update(dt);
+			
+			// Update Squirl/Bird
+			bird1.update(dt);
+			
+			camera.position.x = mainP.b2body.getPosition().x;
+			camera.position.y = mainP.b2body.getPosition().y;
+			
+			camera.update();
+			renderer.setView(camera);
+			
+		}
+		
 
 	@Override
 	public void render(float delta) {
@@ -214,49 +427,17 @@ public class MainGameScreen implements Screen {
 		ratio = (int) ((mainP.getHealth() / mainP.maxHealth) * (healthbackWidth - 20));
 
 		// clearing color and setting background color
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(0, 0, 0, 0);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		// Set camera position
-		camera.position.set(mainP.getPosX() + mainP.sizeX / 2, mainP.getPosY() + mainP.sizeY / 2, 0);
-		camera.update();
+//		camera.position.set(mainP.getPosX() + mainP.sizeX / 2, mainP.getPosY() + mainP.sizeY / 2, 0);
+//		camera.update();
 	
 		// Render Tiled Map
 		renderer.setView(camera);
-
-		// creating the ceiling boundary and floor boundary
-
-		// rectanglePlayer = new Rectangle(
-		// mainP.getxCoordinate(),mainP.getyCoordinate(),img2.getWidth(),img2.getHeight());
-		//// if(!created)
-		//// {
-		// Tile ceiling = new Tile(0,Gdx.graphics.getHeight()-((float)
-		// (Gdx.graphics.getHeight()*0.10)),Gdx.graphics.getWidth(),(float)
-		// (Gdx.graphics.getHeight()*0.10));
-		// ceiling.renderTile();
-		// Tile floor = new Tile(0,0,Gdx.graphics.getWidth(),(float)
-		// (Gdx.graphics.getHeight()*0.10));
-		// floor.renderTile();
-		//// }
-		//
-		//// if(!created)
-		//// {
-		// rectangleCeiling = new
-		// Rectangle(ceiling.getXCoordinate(),ceiling.getYCoordinate(),ceiling.getWidth(),ceiling.getHeight());
-		// rectangleFloor = new
-		// Rectangle(floor.getXCoordinate(),floor.getYCoordinate(),floor.getWidth(),floor.getHeight());
-		// created = true;
-		//// }
-		//
-		// //booleans that are checking collision
-		// isOverlappingCeiling = rectanglePlayer.overlaps(rectangleCeiling);
-		// isOverlappingFloor = rectanglePlayer.overlaps(rectangleFloor);
-		//
-
-		// controls players action based on input and checks to see if space is pressed
-		// while
-		// they are moving so that the bullet can travel while player is moving
-		// also does the check for collision and responds accordingly
+							
+		
 
 		if (Gdx.input.isKeyJustPressed(Keys.ESCAPE)) {
 			this.dispose();
@@ -271,52 +452,66 @@ public class MainGameScreen implements Screen {
 			// game.setScreen(new PauseMenuScreen(game,main));
 
 		}
+		//game.batch.begin();
 		game.batch.setProjectionMatrix(camera.combined);
 		renderer.render();
 		vect1.x = mainP.getCenterX();
 		vect1.y = mainP.getCenterY();
 		if (!paused) {
-
-			if (Gdx.input.isKeyPressed(Keys.UP)) {
+						
+			
+			// New code added from Example Game
+						update(delta);
+						renderer.render();
+						b2dr.render(world, camera.combined);
+						game.batch.setProjectionMatrix(camera.combined);
+						game.batch.begin();
+						mainP.draw(game.batch);
+						dog1.draw(game.batch);
+						mouse1.draw(game.batch);
+						bird1.draw(game.batch);
+						game.batch.end();
+			
+			if (Gdx.input.isKeyPressed(Keys.W)) {
 				if (!Gdx.input.isKeyJustPressed(Keys.SPACE)) {
 					// if(!isOverlappingCeiling)
 					{
 
 						up = true;
 						last = 0;
-						mainP.setYCoordinate(mainP.getyCoordinate() + mainP.speed);
+//						mainP.setYCoordinate(mainP.getyCoordinate() + mainP.speed);
 						// rectanglePlayer.setPosition(mainP.getxCoordinate(), mainP.getyCoordinate() +
 						// mainP.speed);
 					}
 				}
 			}
-			if (Gdx.input.isKeyPressed(Keys.DOWN)) {
+			if (Gdx.input.isKeyPressed(Keys.S)) {
 				if (!Gdx.input.isKeyJustPressed(Keys.SPACE)) {
 					// if(!isOverlappingFloor)
 					{
 						last = 2;
 						down = true;
-						mainP.setYCoordinate(mainP.getyCoordinate() - mainP.speed);
+						//mainP.setYCoordinate(mainP.getyCoordinate() - mainP.speed);
 						// rectanglePlayer.setPosition(mainP.getxCoordinate(), mainP.getyCoordinate() -
 						// mainP.speed);
 					}
 				}
 			}
-			if (Gdx.input.isKeyPressed(Keys.RIGHT)) {
+			if (Gdx.input.isKeyPressed(Keys.D)) {
 				if (!Gdx.input.isKeyJustPressed(Keys.SPACE)) {
 
 					last = 1;
 					right = true;
-					mainP.setXCoordinate(mainP.getxCoordinate() + mainP.speed);
+					//mainP.setXCoordinate(mainP.getxCoordinate() + mainP.speed);
 					// rectanglePlayer.setPosition(mainP.getxCoordinate() + mainP.speed,
 					// mainP.getyCoordinate());
 				}
 			}
-			if (Gdx.input.isKeyPressed(Keys.LEFT)) {
+			if (Gdx.input.isKeyPressed(Keys.A)) {
 				if (!Gdx.input.isKeyJustPressed(Keys.SPACE)) {
 					last = 3;
 					left = true;
-					mainP.setXCoordinate(mainP.getxCoordinate() - mainP.speed);
+					//mainP.setXCoordinate(mainP.getxCoordinate() - mainP.speed);
 					// rectanglePlayer.setPosition(mainP.getxCoordinate() - mainP.speed,
 					// mainP.getyCoordinate());
 				}
@@ -329,25 +524,56 @@ public class MainGameScreen implements Screen {
 			// allows player to shoot using space bar is obsolete and will be replaced
 			// by mouse once fully functioning
 
-			// takes mouse click position and fires bullet at correct anle and speed
+			// takes mouse click position and fires bullet at correct angle and speed
 			// accordingly
 			if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
 
-				if (bulletIsLoaded) {
+				if ((bulletIsLoaded||type == 'm') && !reloading) {
+					remainingbullets -= 1;
+					
+					if(remainingbullets < 1)
+					{
+						reload(type);
+						
+					}
+					
 					Vector3 vecto = new Vector3();
+					Vector3 v = new Vector3();
 					float targetX = Gdx.input.getX() - 10;
 					float targetY =  Gdx.input.getY();
 					vecto.x = targetX;
 					vecto.y = targetY;
+					v.x = mainP.getCenterX();
+					v.y = mainP.getCenterY();
+					v.z = 0;
 					camera.unproject(vecto);
+					camera.unproject(v);
 					
-					
+
 					vect.x = MyGdxGame.width/2;
 					vect.y = MyGdxGame.height/2;
 					camera.unproject(vect);
-					basicEntity.add(Spawner.spawnBullet(vect.x -5, vect.y + 5, 5, 5, 1, 100, true,
-							game.batch, true, vecto.x, vecto.y, (TiledMapTileLayer) map.getLayers().get(0), camera));
+					basicEntity.add(Spawner.spawnBullet(vect.x -5, vect.y + 5, bulletsize, bulletsize, bulletspeed, playerdamage, true,
+							game.batch, true, vecto.x, vecto.y, camera, world, this));
 					shot.play(1.0f);
+					
+					if(type == 's')
+					{
+						
+						float disY = vecto.y - vect.y;
+						float disX = vecto.x - vect.x;
+						bulletsize = 3;
+						bulletspeed = (float) (basebulletspeed * 2/5);
+						for(int i = 0; i <= 3; i++)
+						{
+						basicEntity.add(Spawner.spawnBullet(vect.x - 5, vect.y+5, bulletsize, bulletsize, bulletspeed, playerdamage, true,
+								game.batch, true, vecto.x - i + i * disX, vecto.y + i + i *disY, camera, world, this));	
+						basicEntity.add(Spawner.spawnBullet(vect.x-5, vect.y+5, bulletsize, bulletsize, bulletspeed, playerdamage, true,
+								game.batch, true, vecto.x + i, vecto.y - i, camera, world, this));	
+						}
+					}
+					
+					
 					bulletIsLoaded = false;
 				}
 			}
@@ -356,119 +582,99 @@ public class MainGameScreen implements Screen {
 			}
 		}
 
-		game.batch.begin();
+		//game.batch.begin();
 		// determines what image to load for
 		// character based on what direction they were facing
-		if (up == true) {
-			game.batch.draw(img2, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
-		} else if (right == true) {
-			game.batch.draw(img3, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
-		} else if (down == true) {
-			game.batch.draw(img4, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
-		} else if (left == true) {
-			game.batch.draw(img5, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
-		} else {
-			if (last == 0) {
-
-				game.batch.draw(img2, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
-			}
-			if (last == 1) {
-
-				game.batch.draw(img3, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
-			}
-			if (last == 2) {
-
-				game.batch.draw(img4, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
-			}
-			if (last == 3) {
-
-				game.batch.draw(img5, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
-			}
-		}
+		
 
 		if (!paused) {
-			for (ShooterEnemy e : shooters) {
-				Bullet b = e.trackPlayer(mainP);
-				if (b != null) {
-					basicEntity.add(b);
-				}
-				if (e.collide(mainP.collision)) {
-					if (e.damage > 0) {
-						mainP.setHealth(mainP.getHealth() - e.damage, e);
-					}
-
-				}
-				e.Draw();
-			}
+			
+			game.batch.begin();
 			
 
-			for (TrackerEnemy e : trackers) {
-				e.trackPlayer(mainP);
-				if (e.collide(mainP.collision)) {
-					if (e.damage > 0) {
-						mainP.setHealth(mainP.getHealth() - e.damage, e);
-					}
-				}
-				e.Draw();
+						
+//			for (ShooterEnemy e : shooters) {
+//				Bullet b = e.trackPlayer(mainP);
+//				if (b != null) {
+//					basicEntity.add(b);
+//				}
+//				if (e.collide(mainP.collision)) {
+//					if (e.damage > 0) {
+//						mainP.setHealth(mainP.getHealth() - e.damage, e);
+//					}
+//
+//				}
+//				e.Draw();
+//			}
+//			
+//
+//			for (TrackerEnemy e : trackers) {
+//				e.trackPlayer(mainP);
+//				if (e.collide(mainP.collision)) {
+//					if (e.damage > 0) {
+//						mainP.setHealth(mainP.getHealth() - e.damage, e);
+//					}
+//				}
+//				e.Draw();
+//			}
+//			boolean clear = true;
+//			for (Entity e : basicEntity) {
+//				if (e.fof != mainP.fof) {
+//					clear = false;
+//					if (e.collide(mainP.collision)) {
+//					
+//						if (e.damage > 0) {
+//							mainP.setHealth(mainP.getHealth() - e.damage, e);
+//
+//							e.hurt(5);
+//						}
+//					}
+//
+//				}
+//				for (Entity w : basicEntity) {
+//					if (e.collide(w.collision)) {
+//						if (e.fof != w.fof) {
+//							if (e.damage > 0 && w.damage > 0) {
+//								e.hurt(w.damage);
+//								game.score += e.pointval;
+//
+//								w.hurt(e.damage);
+//							}
+//
+//						}
+//					}
+//				}
+//				for (Entity w : trackers) {
+//					if (e.collide(w.collision)) {
+//						if (e.fof != w.fof) {
+//							if (e.damage > 0 && w.damage > 0) {
+//								e.hurt(w.damage);
+//
+//								game.score += e.pointval;
+//								game.score += w.pointval;
+//								w.hurt(e.damage);
+//							}
+//						}
+//					}
+//				}
+//				for (Entity w : shooters) {
+//					if (e.collide(w.collision)) {
+//						if (e.fof != w.fof) {
+//
+//							if (e.damage > 0 && w.damage > 0) {
+//								e.hurt(w.damage);
+//								game.score += e.pointval;
+//								game.score += w.pointval;
+//								w.hurt(e.damage);
+//							}
+//
+//						}
+//					}
+//				}
+
+				//e.Draw();
 			}
-			boolean clear = true;
-			for (Entity e : basicEntity) {
-				if (e.fof != mainP.fof) {
-					clear = false;
-					if (e.collide(mainP.collision)) {
-					
-						if (e.damage > 0) {
-							mainP.setHealth(mainP.getHealth() - e.damage, e);
-
-							e.hurt(5);
-						}
-					}
-
-				}
-				for (Entity w : basicEntity) {
-					if (e.collide(w.collision)) {
-						if (e.fof != w.fof) {
-							if (e.damage > 0 && w.damage > 0) {
-								e.hurt(w.damage);
-								game.score += e.pointval;
-
-								w.hurt(e.damage);
-							}
-
-						}
-					}
-				}
-				for (Entity w : trackers) {
-					if (e.collide(w.collision)) {
-						if (e.fof != w.fof) {
-							if (e.damage > 0 && w.damage > 0) {
-								e.hurt(w.damage);
-
-								game.score += e.pointval;
-								game.score += w.pointval;
-								w.hurt(e.damage);
-							}
-						}
-					}
-				}
-				for (Entity w : shooters) {
-					if (e.collide(w.collision)) {
-						if (e.fof != w.fof) {
-
-							if (e.damage > 0 && w.damage > 0) {
-								e.hurt(w.damage);
-								game.score += e.pointval;
-								game.score += w.pointval;
-								w.hurt(e.damage);
-							}
-
-						}
-					}
-				}
-
-				e.Draw();
-			}
-			if (shooters.isEmpty() && trackers.isEmpty() && clear) {
+//			if (shooters.isEmpty() && trackers.isEmpty() && clear) {
 				for (powerup e : powerups) {
 
 					if (e.collide(mainP.collision)) {
@@ -480,12 +686,71 @@ public class MainGameScreen implements Screen {
 							healthbackWidth += 5;
 						}
 						
+						if (e.poweruptype == 'm') {
+							mainP.speed += 0.5;
+							
+						}
+						
+						if (e.poweruptype == 'd') {
+							
+							mainP.basedamage *= 1.25;
+							mainP.damage *= 1.25;
+						}
+						
+						if (e.poweruptype == 'b') {
+							basebulletspeed += 5;
+							
+						}
+						
+						if (e.poweruptype == 'p')
+						{
+							mainP.damage = mainP.basedamage * 2;
+							
+						}
+						
+						if (e.poweruptype == 's')
+						{
+							mainP.damage = mainP.basedamage * 1.5;
+							bulletspeed = (float) (basebulletspeed * 0.8);
+						}
+						
+						if (e.poweruptype == 'm')
+						{
+							mainP.damage = mainP.basedamage * 1.5;
+							bulletspeed = (float) (basebulletspeed * 5);
+						}
 						
 
 					}
 					e.Draw();
-				}
+//				}
 			}
+//			if (up == true) {
+//				game.batch.draw(img2, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
+//			} else if (right == true) {
+//				game.batch.draw(img3, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
+//			} else if (down == true) {
+//				game.batch.draw(img4, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
+//			} else if (left == true) {
+//				game.batch.draw(img5, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
+//			} else {
+//				if (last == 0) {
+//
+//					game.batch.draw(img2, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
+//				}
+//				if (last == 1) {
+//
+//					game.batch.draw(img3, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
+//				}
+//				if (last == 2) {
+//
+//					game.batch.draw(img4, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
+//				}
+//				if (last == 3) {
+//
+//					game.batch.draw(img5, mainP.getCenterX(), mainP.getCenterY(), mainP.sizeX, mainP.sizeY);
+//				}
+//			}
 			Iterator<Entity> test = basicEntity.iterator();
 			while (test.hasNext()) {
 				Entity help = test.next();
@@ -517,9 +782,134 @@ public class MainGameScreen implements Screen {
 				}
 			}
 			
+			// New code
+						int numContacts = world.getContactCount();
+						
+						if(numContacts > 0) {
+							
+							System.out.println("Begin Contact");
+							
+							for(Contact contact: world.getContactList()) {
+								
+								Fixture fixtureA = contact.getFixtureA();
+								Fixture fixtureB = contact.getFixtureB();
+								
+								Array<Fixture> playerFixtures = mainP.b2body.getFixtureList();
+								Array<Fixture> dogFixtures = dog1.b2body.getFixtureList();
+								Array<Fixture> mouseFixtures = mouse1.b2body.getFixtureList();
+								Array<Fixture> birdFixtures = bird1.b2body.getFixtureList();
+								Fixture playerFixture = playerFixtures.get(0);
+								Fixture dogFixture = dogFixtures.get(0);
+								Fixture mouseFixture = mouseFixtures.get(0);
+								Fixture birdFixture = birdFixtures.get(0);
+								
+								if(fixtureA.equals(playerFixture)) {
+									
+									if(fixtureB.equals(dogFixture) || fixtureB.equals(mouseFixture) || fixtureB.equals(birdFixture)) {
+										
+										//System.out.println("Contact A!");
+										
+									}
+									
+								}else if(fixtureB.equals(playerFixture)) {
+									
+									if(fixtureA.equals(dogFixture) || fixtureA.equals(mouseFixture) || fixtureA.equals(birdFixture)) {
+										
+										//System.out.println("Contact B!");
+										
+									}
+									
+								}
+								
+//								System.out.println("Contact between " + fixtureA.toString() + " and " + fixtureB.toString());
+								
+							}
+							
+							//System.out.println("End Contact");
+							
+						}
+						
+					
+			
+game.batch.end();
+		
+		game.batch.begin();
+		if(type == 'p')
+			
+		{
+			magcapacity = 10;
+			bulletsize = 5;
+			basebulletspeed = 5;
+			
+			game.batch.setProjectionMatrix(hudcam.combined);
+			renderer.setView(hudcam);
+			
+		
+			game.batch.draw(pistol, 50,
+					50, weaponWidth+80, weaponHeight+40);
+			
+			
+		
+		for(int i = remainingbullets; i > 0; i--)
+		{
+			
+
+			game.batch.draw(casing, 40 + 15*i,
+					15, weaponWidth+20, weaponHeight+10);
+				
+			
+			
+				
+		}
+		
+		}
+		
+		if(type == 's')
+		{
+			game.batch.setProjectionMatrix(hudcam.combined);
+			renderer.setView(hudcam);
+			magcapacity = 5;
+			game.batch.draw(shotgun, 50, 
+					75, weaponWidth+150, weaponHeight+30);
+			
+
+			for(int i = remainingbullets; i > 0; i--)
+			{
+				
+				game.batch.draw(casing, 20 + 20 * i,
+						5, weaponWidth+30, weaponHeight+40);
+
+			
+			}
 
 		}
+		
+		if(type == 'm')
+		{
+			magcapacity = 250;
+			bulletsize = 1;
+			bulletspeed = (float) (basebulletspeed * 3/10);
+			game.batch.setProjectionMatrix(hudcam.combined);
+			renderer.setView(hudcam);
+			
+			
+			game.batch.draw(machinegun, 50,
+					50, weaponWidth+180, weaponHeight+50);
+			
+			
+			
+		
+			for(int i = remainingbullets; i > 0; i--)
+			{
+				
+				game.batch.draw(casing, 40 + 10*i,
+						15, weaponWidth+20, weaponHeight+10);
+				
 
+			}
+
+		}
+		
 		game.batch.end();
 		game.batch.setProjectionMatrix(hudcam.combined);
 		game.batch.begin();
@@ -603,10 +993,40 @@ public class MainGameScreen implements Screen {
 
 	}
 
+	private void reload(char type) {
+		reloading = true;
+		
+		if(type == 'p')
+		{
+			timer.setInitialDelay(1000);
+			
+
+		}
+		
+		if(type == 's')
+		{
+			timer.setInitialDelay(4000);
+
+		}
+		
+		if(type == 'm')
+		{
+			timer.setInitialDelay(5000);
+
+		}
+		
+		timer.start();
+
+		
+	}
+	
+	
+	
+
 	@Override
 	public void resize(int width, int height) {
-		camera.viewportWidth = width / 5;
-		camera.viewportHeight = height / 5;
+		gamePort.update(width, height);
+		
 		hudcam.viewportWidth = width / 5;
 		hudcam.viewportHeight = height / 5;
 	}
@@ -631,8 +1051,10 @@ public class MainGameScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		// map.dispose();
-		// renderer.dispose();
+		map.dispose();
+		renderer.dispose();
+		world.dispose();
+		b2dr.dispose();
 
 	}
 

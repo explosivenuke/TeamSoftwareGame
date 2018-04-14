@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.game.screens.MainGameScreen;
 
 public class Bullet extends Entity {
 
@@ -13,7 +15,7 @@ public class Bullet extends Entity {
 	float ycoordinate = -100;
 	int damage = 1;
 	int direction = -1;
-	int speed = 5;
+	float speed = 5;
 	
 	float Xspeed;
 	float Yspeed;
@@ -25,13 +27,13 @@ public class Bullet extends Entity {
 			
 	
 	public Bullet(float spawnX, float spawnY, float width, float height, float moveSpeed, double damage, boolean inv,
-			 SpriteBatch map, boolean type, float targetX, float targetY, TiledMapTileLayer collisionLayer, OrthographicCamera camera) {
-		super(spawnX, spawnY, width, height, moveSpeed,1, damage, true, new Texture("bullet.png"), map, type,collisionLayer,0);
+			 SpriteBatch map, boolean type, float targetX, float targetY, OrthographicCamera camera, World world, MainGameScreen screen) {
+		super(spawnX, spawnY, width, height, moveSpeed,1, damage, true, new Texture("bullet.png"), map, type, 0, world, screen);
 		this.camera = camera;
 		float distance = (float) Math.sqrt(Math.pow(targetX - this.getCenterX(), 2) + Math.pow(targetY - this.getCenterY(), 2));
 		Xspeed = (targetX - this.getCenterX())/distance;
 		Yspeed = (targetY - this.getCenterY())/distance;
-		
+		speed = moveSpeed;
 		vect = new Vector3();
 	}
 	public void Draw() {
@@ -47,7 +49,7 @@ public class Bullet extends Entity {
 		super.Draw();
 	}
 
-	public int getspeed() {
+	public float getspeed() {
 		return speed;
 	}
 
