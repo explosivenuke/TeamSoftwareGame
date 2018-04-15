@@ -14,6 +14,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.game.screens.MainGameScreen;
 
@@ -42,7 +43,7 @@ public class Mouse extends TimerEnemy{
 		// New code from Example Game
 		sprite = new Sprite(screen.getAtlas().findRegion("mouse_left"));
 		defineMouse();
-		texture = new TextureRegion(sprite.getTexture(), 179, 44, 16, 11);
+		texture = new TextureRegion(sprite.getTexture(), 1, 1, 16, 11); // This line has been changed
 		setBounds(0, 0, 16 / MyGdxGame.PPM, 11 / MyGdxGame.PPM);
 		setRegion(texture);
 		
@@ -66,8 +67,8 @@ public class Mouse extends TimerEnemy{
 		b2body = world.createBody(bdef);
 
 		FixtureDef fdef = new FixtureDef();
-		CircleShape shape = new CircleShape();
-		shape.setRadius(5 / MyGdxGame.PPM);
+		PolygonShape shape = new PolygonShape(); // This line has been changed
+		shape.setAsBox(16 / MyGdxGame.PPM / 2, 11 / MyGdxGame.PPM / 2); // This line has been changed
 
 		fdef.shape = shape;
 		b2body.createFixture(fdef);

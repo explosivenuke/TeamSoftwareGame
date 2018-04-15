@@ -217,7 +217,7 @@ public class MainGameScreen implements Screen {
 		music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
 
 		// New code added from Example Game
-		atlas = new TextureAtlas("player_and enemies.pack");
+		atlas = new TextureAtlas("sprites.pack");
 		camera = new OrthographicCamera();
 		gamePort = new FitViewport(MyGdxGame.V_Width / MyGdxGame.PPM, MyGdxGame.V_Height / MyGdxGame.PPM, camera);
 		maploader = new TmxMapLoader();

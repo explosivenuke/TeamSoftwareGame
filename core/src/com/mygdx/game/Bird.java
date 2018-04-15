@@ -15,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.game.screens.MainGameScreen;
 
@@ -46,7 +47,7 @@ public class Bird extends ShooterEnemy{
 		// New code from Example Game
 		sprite = new Sprite(screen.getAtlas().findRegion("bird_left"));
 		defineBird();
-		texture = new TextureRegion(sprite.getTexture(), 1, 1, 24, 20);
+		texture = new TextureRegion(sprite.getTexture(), 515, 255, 24, 20);		
 		setBounds(0, 0, 24 / MyGdxGame.PPM, 20 / MyGdxGame.PPM);
 		setRegion(texture);
 		
@@ -70,9 +71,8 @@ public class Bird extends ShooterEnemy{
 			b2body = world.createBody(bdef);
 
 			FixtureDef fdef = new FixtureDef();
-			CircleShape shape = new CircleShape();
-			shape.setRadius(5 / MyGdxGame.PPM);
-
+			PolygonShape shape = new PolygonShape(); // This line has been changed
+			shape.setAsBox(24 / MyGdxGame.PPM / 2, 20 / MyGdxGame.PPM / 2); // This line has been changed
 			fdef.shape = shape;
 			b2body.createFixture(fdef);
 

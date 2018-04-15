@@ -12,6 +12,8 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.game.screens.MainGameScreen;
@@ -40,25 +42,33 @@ public class Player extends Entity {
 	private Array<TextureRegion> frames;
 	private Sprite sprite;
 	
+	// New code
+		FixtureDef fdef;
+		PolygonShape shape;
+	
+	
 	public Player(float initialX, float initialY, float sizeX, float sizeY, float speed, double initialHealth,
 			boolean inv, int maxHealth, World world, MainGameScreen screen) {
 		super(initialX, initialY, sizeX, sizeY, speed, initialHealth, 0, inv, null, null, true, 0, world, screen);
 		this.maxHealth = maxHealth;
 		
-		// New code from Example Game
-				sprite = new Sprite(screen.getAtlas().findRegion("player"));
-				currentState = State.UP;
-				previousState = State.UP;
-				frames = new Array<TextureRegion>();
-				frames.add(new TextureRegion(sprite.getTexture(), 55, 24, 14, 25));
-				frames.add(new TextureRegion(sprite.getTexture(), 71, 26, 14, 23));
-				frames.add(new TextureRegion(sprite.getTexture(), 29, 30, 24, 19));
-				frames.add(new TextureRegion(sprite.getTexture(), 2, 29, 25, 20));
-				definePlayer();
-				playerUp = new TextureRegion(sprite.getTexture(), 54, 1, 14, 25);
-				setBounds(0, 0, 14 / MyGdxGame.PPM, 25 / MyGdxGame.PPM);
-				setRegion(playerUp);
-				b2body.setLinearDamping(20f);
+		sprite = new Sprite(screen.getAtlas().findRegion("player"));
+		currentState = State.UP;
+		previousState = State.UP;
+		frames = new Array<TextureRegion>();
+		// player_up
+		frames.add(new TextureRegion(sprite.getTexture(), 585, 276, 14, 25)); // This line has been changed
+		// player_down
+		frames.add(new TextureRegion(sprite.getTexture(), 569, 278, 14, 23)); // This line has been changed
+		// player_left
+		frames.add(new TextureRegion(sprite.getTexture(), 543, 282, 24, 19)); // This line has been changed
+		// player_right
+		frames.add(new TextureRegion(sprite.getTexture(), 516, 281, 25, 20)); // This line has been changed
+		definePlayer();
+		playerUp = new TextureRegion(sprite.getTexture(), 585, 276, 14, 25); // This line has been changed
+		setBounds(0, 0, 14 / MyGdxGame.PPM, 25 / MyGdxGame.PPM);
+		setRegion(playerUp);
+		b2body.setLinearDamping(20f);
 		
 
 	}
@@ -69,7 +79,41 @@ public class Player extends Entity {
 			setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
 			setRegion(getFrame(dt));
 			
+			// New code
+			shape = (PolygonShape) getShape();
+			
 		}
+		
+		// New method
+		public Shape getShape() {
+			
+			currentState = getState();
+			
+			PolygonShape polygonShape = new PolygonShape();
+			
+			switch(currentState) {
+				case UP:
+					polygonShape.setAsBox(14 / MyGdxGame.PPM / 2, 25 / MyGdxGame.PPM / 2);
+					break;
+				case DOWN:
+					polygonShape.setAsBox(14 / MyGdxGame.PPM / 2, 23 / MyGdxGame.PPM / 2);
+					break;
+				case LEFT:
+					polygonShape.setAsBox(24 / MyGdxGame.PPM / 2, 19 / MyGdxGame.PPM / 2);
+					break;
+				case RIGHT:
+					polygonShape.setAsBox(25 / MyGdxGame.PPM / 2, 20 / MyGdxGame.PPM / 2);
+					break;
+				default:
+					polygonShape.setAsBox(14 / MyGdxGame.PPM / 2, 25 / MyGdxGame.PPM / 2);
+					break;	
+			}
+			
+			return polygonShape;
+			
+		}
+		
+		
 
 		// New method from Example Game
 		public TextureRegion getFrame(float dt) {
@@ -132,10 +176,11 @@ public class Player extends Entity {
 			bdef.position.set(32 / MyGdxGame.PPM, 32 / MyGdxGame.PPM);
 			bdef.type = BodyDef.BodyType.DynamicBody;
 			b2body = world.createBody(bdef);
+			
+			fdef = new FixtureDef(); // This line has been changed
+			shape = new PolygonShape(); // This line has been changed
+			shape.setAsBox(14 / MyGdxGame.PPM / 2, 25 / MyGdxGame.PPM / 2); // This line has been changed
 
-			FixtureDef fdef = new FixtureDef();
-			CircleShape shape = new CircleShape();
-			shape.setRadius(5 / MyGdxGame.PPM);
 
 			fdef.shape = shape;
 			b2body.createFixture(fdef);

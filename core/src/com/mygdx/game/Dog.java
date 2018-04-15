@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.game.screens.MainGameScreen;
 
@@ -26,7 +27,7 @@ public class Dog extends TrackerEnemy{
 		// New code from Example Game
 				sprite = new Sprite(screen.getAtlas().findRegion("dog_left"));
 				defineDog();
-				texture = new TextureRegion(sprite.getTexture(), 131, 20, 46, 35);
+				texture = new TextureRegion(sprite.getTexture(), 1, 14, 46, 35); // This line has been changed
 				setBounds(0, 0, 46 / MyGdxGame.PPM, 35 / MyGdxGame.PPM);
 				setRegion(texture);
 				
@@ -49,8 +50,8 @@ public void update(float dt) {
 		b2body = world.createBody(bdef);
 		
 		FixtureDef fdef = new FixtureDef();
-		CircleShape shape = new CircleShape();
-		shape.setRadius(5 / MyGdxGame.PPM);
+		PolygonShape shape = new PolygonShape(); // This line has been changed
+		shape.setAsBox(46 / MyGdxGame.PPM / 2, 35 / MyGdxGame.PPM / 2); // This line has been changed
 		
 		fdef.shape = shape;
 		b2body.createFixture(fdef);
